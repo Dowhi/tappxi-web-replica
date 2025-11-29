@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/tappxi-web-replica/pwa-192x192.png" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="description" content="TAppXI - Aplicación para gestión de carreras, gastos y turnos de taxis" />
+  <meta name="theme-color" content="#3b82f6" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="TAppXI" />
+  <link rel="apple-touch-icon" href="/tappxi-web-replica/apple-touch-icon.png" />
+  <title>TAppXI - Gestión de Taxis</title>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/tappxi-web-replica/assets/index-CHzb9IT0.js"></script>
+  <link rel="stylesheet" crossorigin href="/tappxi-web-replica/assets/index-DpFaaaVg.css">
+<link rel="manifest" href="/tappxi-web-replica/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/tappxi-web-replica/registerSW.js"></script></head>
+
+<body class="bg-zinc-950 dark">
+  <div id="firebase-notice"
+    class="hidden fixed top-0 left-0 right-0 bg-red-600 text-white text-center p-2 text-sm z-50">
+    Please configure your Firebase credentials in <strong>firebaseConfig.ts</strong> to connect to the database.
+  </div>
+  <div id="root"></div>
+
+  <!-- Firebase SDK (Compat version for simplicity in this environment) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+</body>
+
+</html>
