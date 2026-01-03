@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/tappxi-basic/sw.js', { scope: '/tappxi-basic/' })})}
