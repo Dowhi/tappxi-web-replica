@@ -167,17 +167,17 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        let yPos = 15; // Reduced initial Y position
+        let yPos = 10; // Start higher for compactness
 
-        // Encabezado
-        doc.setFontSize(16); // Slightly smaller title
+        // Encabezado Compacto
+        doc.setFontSize(12); // Reduced from 16
         doc.setTextColor(0, 0, 0);
         doc.text('INFORME FISCAL Y CONTABLE', pageWidth / 2, yPos, { align: 'center' });
-        yPos += 7; // Reduced gap
+        yPos += 5;
 
-        doc.setFontSize(10); // Smaller metadata
+        doc.setFontSize(8); // Reduced from 10
         doc.text(`Período: ${fechaDesde.toLocaleDateString('es-ES')} - ${fechaHasta.toLocaleDateString('es-ES')}`, pageWidth / 2, yPos, { align: 'center' });
-        yPos += 6; // Reduced gap
+        yPos += 4;
 
         // Mostrar filtros aplicados
         let textoFiltros = 'Filtros: ';
@@ -199,87 +199,57 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
             }
         }
 
-        doc.setFontSize(10);
+        doc.setFontSize(8);
         doc.text(textoFiltros, pageWidth / 2, yPos, { align: 'center' });
+        yPos += 4;
+
+        doc.setTextColor(100, 100, 100);
+        doc.setFontSize(7);
+        doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')} ${new Date().toLocaleTimeString('es-ES')}`, pageWidth / 2, yPos, { align: 'center' });
+        doc.setTextColor(0, 0, 0); // Reset color
         yPos += 6;
 
-        doc.setTextColor(100, 100, 100); // Gray for generation date
-        doc.setFontSize(9);
-        doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')} ${new Date().toLocaleTimeString('es-ES')}`, pageWidth / 2, yPos, { align: 'center' });
-        doc.setTextColor(0, 0, 0); // Reset color
-        yPos += 10; // Reduced gap before summary
-
-        const totalIngresos = carreras.reduce((sum, c) => sum + (c.cobrado || 0), 0);
+        // Calculos previos (Ingresos se calculan pero no se muestran en resumen)
+        // const totalIngresos = carreras.reduce((sum, c) => sum + (c.cobrado || 0), 0);
         const totalGastos = gastos.reduce((sum, g) => sum + (g.importe || 0), 0);
         const baseImponibleGastos = gastos.reduce((sum, g) => sum + (g.baseImponible || g.importe || 0), 0);
         const totalIVAGastos = gastos.reduce((sum, g) => sum + (g.ivaImporte || 0), 0);
-        const balance = totalIngresos - totalGastos;
 
         // =====================
-        // RESUMEN EJECUTIVO (TABLA)
+        // RESUMEN EJECUTIVO (Solo Gastos)
         // =====================
-        doc.setFontSize(12); // Smaller section title
+        doc.setFontSize(10);
         doc.text('RESUMEN EJECUTIVO', 14, yPos);
-        yPos += 5; // Reduced gap
+        yPos += 4;
 
-        // Tabla resumen tipo hoja de cálculo
+        // Tabla resumen unificada
         // @ts-ignore
         autoTableModule.default(doc, {
             startY: yPos,
             head: [[
-                'Total Ingresos (€)',
                 'Total Gastos (€)',
-                'Balance Neto (€)'
-            ]],
-            body: [[
-                totalIngresos.toFixed(2),
-                totalGastos.toFixed(2),
-                balance.toFixed(2)
-            ]],
-            theme: 'grid',
-            styles: {
-                fontSize: 9, // Smaller font
-                halign: 'center',
-                cellPadding: 1.5 // Reduced padding
-            },
-            headStyles: {
-                fillColor: [245, 245, 245], // Lighter gray
-                textColor: [0, 0, 0],
-                fontStyle: 'bold',
-                lineWidth: 0.1,
-                lineColor: [200, 200, 200]
-            },
-            margin: { left: 14, right: 14 }
-        });
-
-        // Segunda fila (Base + IVA)
-        const resumenY = (doc as any).lastAutoTable.finalY + 2; // Reduced gap between tables
-
-        // @ts-ignore
-        autoTableModule.default(doc, {
-            startY: resumenY,
-            head: [[
-                'Base Imponible Gastos (€)',
+                'Base Imponible (€)',
                 'IVA Gastos (€)'
             ]],
             body: [[
+                totalGastos.toFixed(2),
                 baseImponibleGastos.toFixed(2),
                 totalIVAGastos.toFixed(2)
             ]],
             theme: 'grid',
             styles: {
-                fontSize: 9, // Smaller font
+                fontSize: 9,
                 halign: 'center',
-                cellPadding: 1.5 // Reduced padding
+                cellPadding: 1.5
             },
             headStyles: {
-                fillColor: [245, 245, 245], // Lighter gray
+                fillColor: [245, 245, 245],
                 textColor: [0, 0, 0],
                 fontStyle: 'bold',
                 lineWidth: 0.1,
                 lineColor: [200, 200, 200]
             },
-            margin: { left: 30, right: 30 }
+            margin: { left: 40, right: 40 }
         });
 
         yPos = (doc as any).lastAutoTable.finalY + 8; // Reduced gap after summary
