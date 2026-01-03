@@ -1,0 +1,169 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+html {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--base-font-size, 12px);
+}
+
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+
+.glass-panel {
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(39, 39, 42, 0.4), rgba(24, 24, 27, 0.4));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Ajustes de alto contraste: se activan cuando el ThemeContext marca highContrast */
+:root[data-high-contrast="true"] body,
+:root[data-high-contrast="true"] .bg-zinc-950 {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+:root[data-high-contrast="true"] .bg-zinc-800 {
+  background-color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+:root[data-high-contrast="true"] .text-zinc-400,
+:root[data-high-contrast="true"] .text-zinc-300,
+:root[data-high-contrast="true"] .text-zinc-100 {
+  color: #ffffff !important;
+}
+
+/* Temas de color: se aplican sobre elementos clave (barra superior, botones primarios, etc.) */
+
+/* Amarillo por defecto ya existe; aquí adaptamos según tema seleccionado */
+
+:root[data-theme="azul"] .bg-yellow-400 {
+  background-color: #3b82f6 !important;
+}
+
+:root[data-theme="esmeralda"] .bg-yellow-400 {
+  background-color: #22c55e !important;
+}
+
+:root[data-theme="ambar"] .bg-yellow-400 {
+  background-color: #f59e0b !important;
+}
+
+:root[data-theme="fucsia"] .bg-yellow-400 {
+  background-color: #e879f9 !important;
+}
+
+/* Botones primarios azules → adaptados al tema de color */
+
+:root[data-theme="azul"] .bg-blue-600 {
+  background-color: #2563eb !important;
+}
+
+:root[data-theme="esmeralda"] .bg-blue-600 {
+  background-color: #16a34a !important;
+}
+
+:root[data-theme="ambar"] .bg-blue-600 {
+  background-color: #d97706 !important;
+}
+
+:root[data-theme="fucsia"] .bg-blue-600 {
+  background-color: #c026d3 !important;
+}
+
+:root[data-theme="azul"] .hover\:bg-blue-700:hover {
+  background-color: #1d4ed8 !important;
+}
+
+:root[data-theme="esmeralda"] .hover\:bg-blue-700:hover {
+  background-color: #15803d !important;
+}
+
+:root[data-theme="ambar"] .hover\:bg-blue-700:hover {
+  background-color: #b45309 !important;
+}
+
+:root[data-theme="fucsia"] .hover\:bg-blue-700:hover {
+  background-color: #a21caf !important;
+}
+
+/* Animación de entrada suave para pantallas */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.25s ease-out;
+}
+
+/* Animación para Toast */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Mejoras para móvil */
+@media (max-width: 640px) {
+  /* Asegurar que los inputs no zoomen en iOS */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Mejorar área táctil */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Safe area para iPhone con notch */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
