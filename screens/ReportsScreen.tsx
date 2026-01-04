@@ -22,6 +22,44 @@ interface ReportFilter {
     proveedor?: string;
 }
 
+interface ColumnConfig {
+    id: string;
+    label: string;
+    width: number | 'auto' | 'wrap';
+    align?: 'left' | 'center' | 'right';
+    isDefault?: boolean;
+}
+
+const EXPENSE_COLUMNS: ColumnConfig[] = [
+    { id: 'fecha', label: 'Fecha', width: 14, align: 'center', isDefault: true },
+    { id: 'importe', label: '€', width: 11, align: 'right', isDefault: true },
+    { id: 'proveedor', label: 'Proveedor', width: 34, align: 'left', isDefault: true },
+    { id: 'concepto', label: 'Concepto', width: 23, align: 'left', isDefault: true },
+    { id: 'factura', label: 'Factura', width: 30, align: 'left', isDefault: true },
+    { id: 'formaPago', label: 'F. Pago', width: 15, align: 'left', isDefault: true },
+    { id: 'base', label: 'Base', width: 10, align: 'right', isDefault: true },
+    { id: 'ivaPorcentaje', label: '%', width: 9, align: 'center', isDefault: true },
+    { id: 'ivaImporte', label: 'IVA', width: 10, align: 'right', isDefault: true },
+    { id: 'kms', label: 'Kms.', width: 10, align: 'center', isDefault: true },
+    { id: 'notas', label: 'Notas', width: 'auto', align: 'left', isDefault: true }
+];
+
+const INCOME_COLUMNS: ColumnConfig[] = [
+    { id: 'fecha', label: 'FECHA', width: 20, align: 'center', isDefault: true },
+    { id: 'ingresos', label: 'INGRESOS', width: 20, align: 'right', isDefault: true },
+    { id: 'kms', label: 'Kms.', width: 20, align: 'center', isDefault: true },
+    { id: 'horas', label: 'HORAS', width: 20, align: 'center', isDefault: true },
+    // Group: CARRERAS
+    { id: 'carreras_total', label: 'TOTAL', width: 14, align: 'center', isDefault: true },
+    { id: 'carreras_tarj', label: 'TARJ.', width: 15, align: 'center', isDefault: true },
+    { id: 'carreras_emis', label: 'EMIS.', width: 15, align: 'center', isDefault: true },
+    { id: 'carreras_vales', label: 'VALES', width: 14, align: 'center', isDefault: true },
+    // Group: IMPORTE
+    { id: 'importe_tarj', label: 'TARJETAS', width: 18, align: 'right', isDefault: true },
+    { id: 'importe_emis', label: 'EMISORA', width: 18, align: 'right', isDefault: true },
+    { id: 'importe_vales', label: 'VALES', width: 18, align: 'right', isDefault: true }
+];
+
 const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
     const { showToast } = useToast();
     const [fechaDesde, setFechaDesde] = useState<string>('');
@@ -34,6 +72,11 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
     const [showDatePickerDesde, setShowDatePickerDesde] = useState(false);
     const [showDatePickerHasta, setShowDatePickerHasta] = useState(false);
     const [showGastosFiltro, setShowGastosFiltro] = useState(false);
+
+    // Column Selection State
+    const [selectedExpenseCols, setSelectedExpenseCols] = useState<string[]>(EXPENSE_COLUMNS.map(c => c.id));
+    const [selectedIncomeCols, setSelectedIncomeCols] = useState<string[]>(INCOME_COLUMNS.map(c => c.id));
+    const [showColumnSelector, setShowColumnSelector] = useState(false);
 
     // Inicializar fechas con el mes actual
     useEffect(() => {
@@ -396,7 +439,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                     // Fila de cabecera de mes
                     tableBody.push([{
                         content: mesesNombres[mes],
-                        colSpan: 11, // Ajustado a 11 columnas (sin DIAS)
+                        colSpan: selectedIncomeCols.length, // Dynamic colspan
                         styles: {
                             fontStyle: 'bold',
                             fillColor: [240, 240, 240],
@@ -413,47 +456,99 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                 const minutes = Math.floor((d.horasMs % (1000 * 60 * 60)) / (1000 * 60));
                 const horasStr = `${hours}h ${minutes}m`;
 
-                tableBody.push([
-                    fechaStr,
-                    d.ingresos.toFixed(2),
-                    d.kilometros.toFixed(0), // KILOMETROS
-                    horasStr, // HORAS
-                    // DIAS column removed
-                    d.carrerasTotal.toString(),
-                    d.carrerasTarjeta.toString(),
-                    d.carrerasEmisora.toString(),
-                    d.carrerasVales.toString(),
-                    d.importeTarjeta.toFixed(2),
-                    d.importeEmisora.toFixed(2),
-                    d.importeVales.toFixed(2)
-                ]);
+                // Build row based on selected columns
+                const row: string[] = [];
+                // Standard columns mapping
+                const valMap: any = {
+                    'fecha': fechaStr,
+                    'ingresos': d.ingresos.toFixed(2),
+                    'kms': d.kilometros.toFixed(0),
+                    'horas': horasStr,
+                    'carreras_total': d.carrerasTotal.toString(),
+                    'carreras_tarj': d.carrerasTarjeta.toString(),
+                    'carreras_emis': d.carrerasEmisora.toString(),
+                    'carreras_vales': d.carrerasVales.toString(),
+                    'importe_tarj': d.importeTarjeta.toFixed(2),
+                    'importe_emis': d.importeEmisora.toFixed(2),
+                    'importe_vales': d.importeVales.toFixed(2)
+                };
+
+                INCOME_COLUMNS.forEach(col => {
+                    if (selectedIncomeCols.includes(col.id)) {
+                        row.push(valMap[col.id]);
+                    }
+                });
+                tableBody.push(row);
             });
+
+            // Dynamic Header Construction
+            const head1: any[] = [];
+            const head2: any[] = [];
+            const colStyles: any = {};
+            let colIndex = 0;
+
+            // Helper to add standard column
+            const addStandardCol = (colId: string) => {
+                const col = INCOME_COLUMNS.find(c => c.id === colId);
+                if (col && selectedIncomeCols.includes(colId)) {
+                    head1.push({
+                        content: col.label,
+                        rowSpan: 2,
+                        styles: { valign: 'middle', halign: 'center', fillColor: [0, 0, 255] }
+                    });
+                    head2.push(null); // Placeholder for rowSpan
+                    colStyles[colIndex] = { cellWidth: col.width, halign: col.align || 'center' };
+                    if (colId === 'horas') colStyles[colIndex].fontStyle = 'bold';
+                    colIndex++;
+                }
+            };
+
+            addStandardCol('fecha');
+            addStandardCol('ingresos');
+            addStandardCol('kms');
+            addStandardCol('horas');
+
+            // Helper for Groups
+            const addGroup = (title: string, color: number[], cols: string[]) => {
+                const visibleCols = cols.filter(id => selectedIncomeCols.includes(id));
+                if (visibleCols.length > 0) {
+                    head1.push({
+                        content: title,
+                        colSpan: visibleCols.length,
+                        styles: { halign: 'center', fillColor: color, textColor: [0, 0, 0] }
+                    });
+
+                    visibleCols.forEach(id => {
+                        const col = INCOME_COLUMNS.find(c => c.id === id)!;
+                        head2.push({
+                            content: col.label,
+                            styles: { fillColor: color, textColor: [0, 0, 0] }
+                        });
+                        colStyles[colIndex] = { cellWidth: col.width, halign: col.align || 'center' };
+                        colIndex++;
+                    });
+                }
+            };
+
+            addGroup('CARRERAS', [205, 200, 0], ['carreras_total', 'carreras_tarj', 'carreras_emis', 'carreras_vales']);
+            addGroup('IMPORTE EN €', [255, 200, 0], ['importe_tarj', 'importe_emis', 'importe_vales']);
+
+            // Filter out nulls from head2 caused by rowSpans
+            // Actually, autoTable expects the grid to be consistent. 
+            // If rowSpan is used in head1, the corresponding cell in head2 should explicitly NOT exist in the array structure for some versions, 
+            // OR be consistent. 
+            // jspdf-autotable logic: simpler to just use 2 rows where valid.
+            // But head array must be array of arrays.
+            // The rowSpan in head1 covers the cell in head2 implicitly for column calculation?
+            // Let's clean up head2: remove the null placeholders and rely on rowSpan.
+            const cleanHead2 = head2.filter(h => h !== null);
 
             // @ts-ignore
             if (typeof autoTableModule.default === 'function') {
                 // @ts-ignore
                 autoTableModule.default(doc, {
                     startY: yPos,
-                    head: [
-                        [
-                            { content: 'FECHA', rowSpan: 2, styles: { valign: 'middle', halign: 'center', fillColor: [0, 0, 255] } },
-                            { content: 'INGRESOS', rowSpan: 2, styles: { valign: 'middle', halign: 'center', fillColor: [0, 0, 255] } },
-                            { content: 'Kms.', rowSpan: 2, styles: { valign: 'middle', halign: 'center', fillColor: [0, 0, 255] } },
-                            { content: 'HORAS', rowSpan: 2, styles: { valign: 'middle', halign: 'center', fillColor: [0, 0, 255] } },
-                            // DIAS column removed
-                            { content: 'CARRERAS', colSpan: 4, styles: { halign: 'center', fillColor: [205, 200, 0], textColor: [0, 0, 0] } },
-                            { content: 'IMPORTE EN €', colSpan: 3, styles: { halign: 'center', fillColor: [255, 200, 0], textColor: [0, 0, 0] } }
-                        ],
-                        [
-                            { content: 'TOTAL', styles: { fillColor: [205, 200, 0], textColor: [0, 0, 0] } },
-                            { content: 'TARJ.', styles: { fillColor: [205, 200, 0], textColor: [0, 0, 0] } },
-                            { content: 'EMIS.', styles: { fillColor: [205, 200, 0], textColor: [0, 0, 0] } },
-                            { content: 'VALES', styles: { fillColor: [205, 200, 0], textColor: [0, 0, 0] } },
-                            { content: 'TARJETAS', styles: { fillColor: [255, 200, 0], textColor: [0, 0, 0] } },
-                            { content: 'EMISORA', styles: { fillColor: [255, 200, 0], textColor: [0, 0, 0] } },
-                            { content: 'VALES', styles: { fillColor: [255, 200, 0], textColor: [0, 0, 0] } }
-                        ]
-                    ],
+                    head: [head1, cleanHead2],
                     body: tableBody,
                     theme: 'grid',
                     headStyles: {
@@ -464,35 +559,19 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                     },
                     styles: {
                         fontSize: 8,
-                        cellPadding: 1, // Reduced padding for compactness
+                        cellPadding: 1,
                         halign: 'center',
                         valign: 'middle'
                     },
-                    columnStyles: {
-                        0: { cellWidth: 20, halign: 'center' }, // Fecha
-                        1: { cellWidth: 20, halign: 'right' }, // Ingresos
-                        2: { cellWidth: 20, halign: 'center' }, // Kilometros
-                        3: { cellWidth: 20, halign: 'center', fontStyle: 'bold' }, // Horas
-                        // DIAS removed, shift indices
-                        4: { cellWidth: 14 }, // Carreras Total
-                        5: { cellWidth: 15 }, // Carreras Tarjetas
-                        6: { cellWidth: 15 }, // Carreras Emisora
-                        7: { cellWidth: 14 }, // Carreras Vales
-                        8: { cellWidth: 18, halign: 'right' }, // Importe Tarjetas
-                        9: { cellWidth: 18, halign: 'right' }, // Importe Emisora
-                        10: { cellWidth: 18, halign: 'right' } // Importe Vales
-                    },
+                    columnStyles: colStyles,
                     margin: { left: 10, right: 10 }
                 });
             } else {
-                // Fallback
+                // Fallback simplified
                 // @ts-ignore
                 doc.autoTable({
                     startY: yPos,
-                    head: [
-                        ['FECHA', 'INGRESOS', 'KILOMETROS', 'HORAS', 'CARRERAS', '', '', '', 'IMPORTE EN €', '', ''],
-                        ['', '', '', '', 'TOTAL', 'TARJ.', 'EMIS.', 'VALES', 'TARJETAS', 'EMISORA', 'VALES']
-                    ],
+                    head: [head1, cleanHead2],
                     body: tableBody,
                     theme: 'grid',
                     styles: { fontSize: 8, halign: 'center' }
@@ -542,7 +621,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                     // Fila de cabecera de mes
                     tableBody.push([{
                         content: meses[mesIndex],
-                        colSpan: 11,
+                        colSpan: selectedExpenseCols.length,
                         styles: {
                             fontStyle: 'bold',
                             fillColor: [240, 240, 240],
@@ -556,42 +635,71 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                         const fecha = g.fecha instanceof Date ? g.fecha : new Date(g.fecha);
                         const esVehiculoConServicios = g.tipo?.toLowerCase() === 'vehiculo' && g.servicios && Array.isArray(g.servicios) && g.servicios.length > 0;
 
+                        // Fila principal
+                        const row: string[] = [];
+                        const valMap: any = {
+                            'fecha': fecha.toLocaleDateString('es-ES'),
+                            'importe': g.importe?.toFixed(2) || '0.00',
+                            'proveedor': g.proveedor || g.taller || 'Sin proveedor',
+                            'concepto': g.concepto || 'Sin concepto',
+                            'factura': g.numeroFactura || 'Sin factura',
+                            'formaPago': g.formaPago || 'N/A',
+                            'base': (g.baseImponible || g.importe || 0).toFixed(2),
+                            'ivaPorcentaje': g.ivaPorcentaje ? `${g.ivaPorcentaje}%` : '0%',
+                            'ivaImporte': (g.ivaImporte || 0).toFixed(2),
+                            'kms': g.kilometros ? g.kilometros.toFixed(0) : (g.kilometrosVehiculo ? g.kilometrosVehiculo.toFixed(0) : 'N/A'),
+                            'notas': g.notas || ''
+                        };
 
-                        // Fila principal - mismo formato para todos los gastos
-                        // Columnas: Fecha, €, Proveedor, Concepto, Factura, F. Pago, Base, %, IVA, Kms., Notas
-                        tableBody.push([
-                            fecha.toLocaleDateString('es-ES'),
-                            g.importe?.toFixed(2) || '0.00',
-                            g.proveedor || g.taller || 'Sin proveedor',
-                            g.concepto || 'Sin concepto',
-                            g.numeroFactura || 'Sin factura',
-                            g.formaPago || 'N/A',
-                            (g.baseImponible || g.importe || 0).toFixed(2),
-                            g.ivaPorcentaje ? `${g.ivaPorcentaje}%` : '0%',
-                            (g.ivaImporte || 0).toFixed(2),
-                            g.kilometros ? g.kilometros.toFixed(0) : (g.kilometrosVehiculo ? g.kilometrosVehiculo.toFixed(0) : 'N/A'),
-                            g.notas || ''
-                        ]);
+                        EXPENSE_COLUMNS.forEach(col => {
+                            if (selectedExpenseCols.includes(col.id)) {
+                                row.push(valMap[col.id]);
+                            }
+                        });
+                        tableBody.push(row);
 
                         // Si es vehículo con servicios, agregar filas de servicios
                         if (esVehiculoConServicios) {
                             g.servicios.forEach((s: any) => {
-                                tableBody.push([
-                                    '', // Fecha vacía
-                                    s.importe ? s.importe.toFixed(2) : '0.00', // €
-                                    '', // Proveedor vacío
-                                    s.descripcion || 'Sin descripción', // Concepto
-                                    s.referencia || 'Sin ref.', // Factura
-                                    s.precio ? s.precio.toFixed(2) : '0.00', // F. Pago (reutilizado para Precio)
-                                    s.descuento ? s.descuento.toFixed(2) : '0.00', // Base (reutilizado para Descuento)
-                                    '', // % vacío
-                                    '', // IVA vacío
-                                    s.cantidad || '1', // Kms (reutilizado para Cantidad)
-                                    '' // Notas vacío
-                                ]);
+                                const subRow: string[] = [];
+                                const subValMap: any = {
+                                    'fecha': '',
+                                    'importe': s.importe ? s.importe.toFixed(2) : '0.00',
+                                    'proveedor': '',
+                                    'concepto': s.descripcion || 'Sin descripción',
+                                    'factura': s.referencia || 'Sin ref.',
+                                    'formaPago': s.precio ? s.precio.toFixed(2) : '0.00', // Reutilizado
+                                    'base': s.descuento ? s.descuento.toFixed(2) : '0.00', // Reutilizado
+                                    'ivaPorcentaje': '',
+                                    'ivaImporte': '',
+                                    'kms': s.cantidad || '1', // Reutilizado
+                                    'notas': ''
+                                };
+                                EXPENSE_COLUMNS.forEach(col => {
+                                    if (selectedExpenseCols.includes(col.id)) {
+                                        subRow.push(subValMap[col.id]);
+                                    }
+                                });
+                                tableBody.push(subRow);
                             });
                         }
                     });
+                });
+
+                // Dynamic Build of Header and Styles
+                const headRow: string[] = [];
+                const colStyles: any = {};
+                let colIndex = 0;
+
+                EXPENSE_COLUMNS.forEach(col => {
+                    if (selectedExpenseCols.includes(col.id)) {
+                        headRow.push(col.label);
+                        colStyles[colIndex] = {
+                            cellWidth: col.width,
+                            halign: col.align || 'left'
+                        };
+                        colIndex++;
+                    }
                 });
 
                 // Usar autoTable con el nuevo formato unificado
@@ -600,24 +708,12 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                     // @ts-ignore
                     autoTableModule.default(doc, {
                         startY: yPos,
-                        head: [['Fecha', '€', 'Proveedor', 'Concepto', 'Factura', 'F. Pago', 'Base', '%', 'IVA', 'Kms.', 'Notas']],
+                        head: [headRow],
                         body: tableBody,
                         theme: 'striped',
                         headStyles: { fillColor: [0, 0, 200], textColor: 255, fontStyle: 'bold', fontSize: 8, halign: 'center' },
                         styles: { fontSize: 7, cellPadding: 1, overflow: 'linebreak', cellWidth: 'wrap', halign: 'center' },
-                        columnStyles: {
-                            0: { cellWidth: 14 }, // Fecha
-                            1: { cellWidth: 11, halign: 'right' }, // €
-                            2: { cellWidth: 34, halign: 'left' }, // Proveedor
-                            3: { cellWidth: 23, halign: 'left' }, // Concepto
-                            4: { cellWidth: 30, halign: 'left' }, // Factura
-                            5: { cellWidth: 15, halign: 'left' }, // Forma Pago
-                            6: { cellWidth: 10, halign: 'right' }, // B. Imp.
-                            7: { cellWidth: 9 }, // IVA %
-                            8: { cellWidth: 10, halign: 'right' }, // IVA €
-                            9: { cellWidth: 10 }, // Kms.
-                            10: { cellWidth: 'auto', halign: 'left' } // Notas
-                        },
+                        columnStyles: colStyles,
                         margin: { left: 10, right: 10 },
                         didParseCell: (data: any) => {
                             if (data.cell.text && data.cell.text.length > 0) {
@@ -630,24 +726,12 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                     // @ts-ignore
                     doc.autoTable({
                         startY: yPos,
-                        head: [['Fecha', '€', 'Proveedor', 'Concepto', 'Factura', 'F. Pago', 'Base', '%', 'IVA', 'Kms.', 'Notas']],
+                        head: [headRow],
                         body: tableBody,
                         theme: 'striped',
                         headStyles: { fillColor: [0, 0, 200], textColor: 255, fontStyle: 'bold', fontSize: 8, halign: 'center' },
                         styles: { fontSize: 7, cellPadding: 1, overflow: 'linebreak', cellWidth: 'wrap', halign: 'center' },
-                        columnStyles: {
-                            0: { cellWidth: 14 }, // Fecha
-                            1: { cellWidth: 11, halign: 'right' }, // €
-                            2: { cellWidth: 34, halign: 'left' }, // Proveedor
-                            3: { cellWidth: 23, halign: 'left' }, // Concepto
-                            4: { cellWidth: 30, halign: 'left' }, // Factura
-                            5: { cellWidth: 15, halign: 'left' }, // Forma Pago
-                            6: { cellWidth: 10, halign: 'right' }, // B. Imp.
-                            7: { cellWidth: 9 }, // IVA %
-                            8: { cellWidth: 10, halign: 'right' }, // IVA €
-                            9: { cellWidth: 10 }, // Kms.
-                            10: { cellWidth: 'auto', halign: 'left' } // Notas
-                        },
+                        columnStyles: colStyles,
                         margin: { left: 10, right: 10 },
                         didParseCell: (data: any) => {
                             if (data.cell.text && data.cell.text.length > 0) {
@@ -890,6 +974,71 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                                 </div>
                             )}
                         </>
+                    )}
+                </div>
+
+                {/* Selector de Columnas */}
+                <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
+                    <button
+                        onClick={() => setShowColumnSelector(!showColumnSelector)}
+                        className="flex items-center justify-between w-full text-left"
+                    >
+                        <h2 className="text-cyan-400 text-lg font-bold">Personalización de Columnas</h2>
+                        <span className="text-zinc-400 text-sm">{showColumnSelector ? 'Ocultar' : 'Mostrar'}</span>
+                    </button>
+
+                    {showColumnSelector && (
+                        <div className="mt-4 space-y-6">
+                            {(filtros.tipo === 'gastos' || filtros.tipo === 'todos') && (
+                                <div>
+                                    <h3 className="text-zinc-300 font-bold mb-3 text-sm border-b border-zinc-700 pb-2">Columnas de Gastos</h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {EXPENSE_COLUMNS.map(col => (
+                                            <label key={col.id} className="flex items-center space-x-2 text-sm text-zinc-400 cursor-pointer hover:text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedExpenseCols.includes(col.id)}
+                                                    onChange={() => {
+                                                        if (selectedExpenseCols.includes(col.id)) {
+                                                            setSelectedExpenseCols(selectedExpenseCols.filter(id => id !== col.id));
+                                                        } else {
+                                                            setSelectedExpenseCols([...selectedExpenseCols, col.id]);
+                                                        }
+                                                    }}
+                                                    className="rounded bg-zinc-800 border-zinc-600 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-zinc-900"
+                                                />
+                                                <span>{col.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {(filtros.tipo === 'ingresos' || filtros.tipo === 'todos') && (
+                                <div>
+                                    <h3 className="text-zinc-300 font-bold mb-3 text-sm border-b border-zinc-700 pb-2">Columnas de Ingresos</h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {INCOME_COLUMNS.map(col => (
+                                            <label key={col.id} className="flex items-center space-x-2 text-sm text-zinc-400 cursor-pointer hover:text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedIncomeCols.includes(col.id)}
+                                                    onChange={() => {
+                                                        if (selectedIncomeCols.includes(col.id)) {
+                                                            setSelectedIncomeCols(selectedIncomeCols.filter(id => id !== col.id));
+                                                        } else {
+                                                            setSelectedIncomeCols([...selectedIncomeCols, col.id]);
+                                                        }
+                                                    }}
+                                                    className="rounded bg-zinc-800 border-zinc-600 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-zinc-900"
+                                                />
+                                                <span>{col.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
 
