@@ -136,6 +136,12 @@ export async function addProveedor(proveedor: Omit<Proveedor, 'id'> & { id?: str
     return key;
 }
 
+export async function updateProveedor(id: string, updates: Partial<Proveedor>): Promise<void> {
+    const existing = await getItem<Proveedor>('proveedores', id);
+    if (!existing) throw new Error('Proveedor not found');
+    await addItem('proveedores', id, { ...existing, ...updates });
+}
+
 export async function deleteProveedor(id: string): Promise<void> {
     await deleteItem('proveedores', id);
 }
@@ -149,6 +155,16 @@ export async function addConcepto(concepto: Omit<Concepto, 'id'> & { id?: string
     const key = concepto.id ?? crypto.randomUUID();
     await addItem('conceptos', key, { ...concepto, id: key });
     return key;
+}
+
+export async function updateConcepto(id: string, updates: Partial<Concepto>): Promise<void> {
+    const existing = await getItem<Concepto>('conceptos', id);
+    if (!existing) throw new Error('Concepto not found');
+    await addItem('conceptos', id, { ...existing, ...updates });
+}
+
+export async function deleteConcepto(id: string): Promise<void> {
+    await deleteItem('conceptos', id);
 }
 
 /** Talleres */

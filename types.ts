@@ -27,6 +27,7 @@ export enum Seccion {
     AnalisisAvanzado = "Análisis Avanzado",
     EstacionTren = "Estación Tren",
     Aeropuerto = "Aeropuerto",
+    GestionDatos = "Gestión de Datos",
 }
 
 export interface Ajustes {

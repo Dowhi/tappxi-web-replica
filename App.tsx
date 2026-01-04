@@ -30,6 +30,7 @@ import AnalisisAvanzadoScreen from './screens/AnalisisAvanzadoScreen';
 import RemindersScreen from './screens/RemindersScreen';
 import TrainStationScreen from './screens/TrainStationScreen';
 import FlightStationScreen from './screens/FlightStationScreen';
+import MasterDataScreen from './screens/MasterDataScreen';
 import BottomNavBar from './components/BottomNavBar';
 
 
@@ -208,6 +209,8 @@ const App: React.FC = () => {
                 return <TrainStationScreen navigateTo={navigateTo} />;
             case Seccion.Aeropuerto:
                 return <FlightStationScreen navigateTo={navigateTo} />;
+            case Seccion.GestionDatos:
+                return <MasterDataScreen navigateTo={navigateTo} />;
             default:
                 return <HomeScreen navigateTo={navigateTo} />;
         }
