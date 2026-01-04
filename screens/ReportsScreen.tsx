@@ -252,33 +252,49 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
         doc.setTextColor(0, 0, 0); // Reset color
         yPos += 6;
 
-        // Calculos previos (Ingresos se calculan pero no se muestran en resumen)
-        // const totalIngresos = carreras.reduce((sum, c) => sum + (c.cobrado || 0), 0);
+        // Calculos previos
+        const totalIngresos = carreras.reduce((sum, c) => sum + (c.cobrado || 0), 0);
         const totalGastos = gastos.reduce((sum, g) => sum + (g.importe || 0), 0);
         const baseImponibleGastos = gastos.reduce((sum, g) => sum + (g.baseImponible || g.importe || 0), 0);
         const totalIVAGastos = gastos.reduce((sum, g) => sum + (g.ivaImporte || 0), 0);
+        const balance = totalIngresos - totalGastos;
 
         // =====================
-        // RESUMEN EJECUTIVO (Solo Gastos)
+        // RESUMEN EJECUTIVO
         // =====================
         doc.setFontSize(10);
         doc.text('RESUMEN EJECUTIVO', 14, yPos);
         yPos += 4;
 
+        // Construir cabeceras y cuerpo dinámicamente
+        const summaryHead = [];
+        const summaryBody = [];
+
+        // Lógica condicional
+        if (filtros.tipo === 'ingresos') {
+            summaryHead.push('Total Ingresos (€)');
+            summaryBody.push(totalIngresos.toFixed(2));
+        } else if (filtros.tipo === 'gastos') {
+            summaryHead.push('Total Gastos (€)', 'Base Imponible (€)', 'IVA Gastos (€)');
+            summaryBody.push(totalGastos.toFixed(2), baseImponibleGastos.toFixed(2), totalIVAGastos.toFixed(2));
+        } else {
+            // 'todos' - Mostrar Balance completo
+            summaryHead.push('Total Ingresos (€)', 'Total Gastos (€)', 'Balance (€)', 'Base Imp. Gustos (€)', 'IVA Gastos (€)');
+            summaryBody.push(
+                totalIngresos.toFixed(2),
+                totalGastos.toFixed(2),
+                balance.toFixed(2),
+                baseImponibleGastos.toFixed(2),
+                totalIVAGastos.toFixed(2)
+            );
+        }
+
         // Tabla resumen unificada
         // @ts-ignore
         autoTableModule.default(doc, {
             startY: yPos,
-            head: [[
-                'Total Gastos (€)',
-                'Base Imponible (€)',
-                'IVA Gastos (€)'
-            ]],
-            body: [[
-                totalGastos.toFixed(2),
-                baseImponibleGastos.toFixed(2),
-                totalIVAGastos.toFixed(2)
-            ]],
+            head: [summaryHead],
+            body: [summaryBody],
             theme: 'grid',
             styles: {
                 fontSize: 9,
