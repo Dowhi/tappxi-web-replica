@@ -279,7 +279,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
             summaryBody.push(totalGastos.toFixed(2), baseImponibleGastos.toFixed(2), totalIVAGastos.toFixed(2));
         } else {
             // 'todos' - Mostrar Balance completo
-            summaryHead.push('Total Ingresos (€)', 'Total Gastos (€)', 'Balance (€)', 'Base Imp. Gustos (€)', 'IVA Gastos (€)');
+            summaryHead.push('Total Ingresos (€)', 'Total Gastos (€)', 'Balance (€)', 'Base Imponible (€)', 'IVA Gastos (€)');
             summaryBody.push(
                 totalIngresos.toFixed(2),
                 totalGastos.toFixed(2),
@@ -780,13 +780,36 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                 doc.text(tituloResumen, 14, yPos);
                 yPos += 6;
                 doc.setFontSize(10);
-                Object.entries(gastosAgrupados)
-                    .sort((a, b) => b[1] - a[1])
-                    .forEach(([nombre, total]) => {
-                        doc.text(`${nombre}: ${total.toFixed(2)} €`, 20, yPos);
-                        yPos += 5;
-                    });
-                yPos += 5;
+
+                const resumenEntries = Object.entries(gastosAgrupados).sort((a, b) => b[1] - a[1]);
+                const midPoint = Math.ceil(resumenEntries.length / 2);
+                const col1 = resumenEntries.slice(0, midPoint);
+                const col2 = resumenEntries.slice(midPoint);
+
+                // Track max Y to continue after current block
+                let startY = yPos;
+                let maxY = yPos;
+
+                // Columna 1
+                col1.forEach(([nombre, total]) => {
+                    doc.text(`${nombre}: ${total.toFixed(2)} €`, 20, yPos);
+                    yPos += 5;
+                });
+                maxY = Math.max(maxY, yPos);
+
+                // Reset for Column 2
+                yPos = startY;
+                const col2X = pageWidth / 2 + 10;
+
+                // Columna 2
+                col2.forEach(([nombre, total]) => {
+                    doc.text(`${nombre}: ${total.toFixed(2)} €`, col2X, yPos);
+                    yPos += 5;
+                });
+                maxY = Math.max(maxY, yPos);
+
+                // Set final Y pos
+                yPos = maxY + 5;
 
                 // Resumen de IVA
                 const ivaPorTipo: { [key: string]: { porcentaje: number; base: number; iva: number } } = {};
