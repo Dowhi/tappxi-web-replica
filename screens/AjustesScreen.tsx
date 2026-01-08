@@ -3,7 +3,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useFontSize } from "../contexts/FontSizeContext";
 import ScreenTopBar from "../components/ScreenTopBar";
 import { Seccion } from "../types";
-import { saveAjustes, getAjustes, deleteAllData, DeleteProgress } from "../services/api";
+import { saveAjustes, getAjustes, deleteAllData, DeleteProgress, removeDuplicates } from "../services/api";
 import { downloadBackupJson, uploadBackupToGoogleDrive, exportToGoogleSheets, restoreBackup, restoreFromGoogleSheets } from "../services/backup";
 import { listFiles, getFileContent } from "../services/google";
 import { archiveOperationalDataOlderThan, getRelativeCutoffDate } from "../services/maintenance";
@@ -110,6 +110,7 @@ const AjustesScreen: React.FC<AjustesScreenProps> = ({ navigateTo }) => {
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [deletionProgress, setDeletionProgress] = useState<number>(0);
     const [deletionMessage, setDeletionMessage] = useState<string>("");
+    const [isCleaning, setIsCleaning] = useState<boolean>(false);
 
     // Custom Modal State
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -595,6 +596,29 @@ const AjustesScreen: React.FC<AjustesScreenProps> = ({ navigateTo }) => {
                         }
                     }
                 );
+            }
+        );
+    };
+
+    const handleCleanDuplicates = () => {
+        showConfirm(
+            "Se buscarán y eliminarán registros duplicados (Exactamente el mismo contenido). ¿Continuar?",
+            async () => {
+                setIsCleaning(true);
+                try {
+                    const result = await removeDuplicates();
+                    showAlert(`✅ Completado.\n\nEliminados:\n- ${result.gastosRemoved} gastos duplicados.\n- ${result.carrerasRemoved} carreras duplicadas.`);
+                    if (result.gastosRemoved > 0 || result.carrerasRemoved > 0) {
+                        // Force reload to update UI/Cache if needed, or just let user navigate
+                        // window.location.reload(); 
+                        // Better to just notify
+                    }
+                } catch (e: any) {
+                    console.error("Error eliminando duplicados:", e);
+                    showAlert(`❌ Error: ${e.message}`);
+                } finally {
+                    setIsCleaning(false);
+                }
             }
         );
     };
@@ -1665,6 +1689,22 @@ const AjustesScreen: React.FC<AjustesScreenProps> = ({ navigateTo }) => {
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 group-hover:text-zinc-400 transition-colors"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
             </section>
+
+            <div className="bg-zinc-800 rounded-lg p-2.5 border border-orange-500/50 mb-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                        <h3 className="text-orange-400 font-bold text-base mb-0.5">Mantenimiento de Datos</h3>
+                        <p className="text-zinc-400 text-sm">Eliminar registros duplicados de gastos y carreras</p>
+                    </div>
+                    <button
+                        onClick={handleCleanDuplicates}
+                        disabled={isCleaning}
+                        className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                        {isCleaning ? 'Limpiando...' : 'Limpiar Duplicados'}
+                    </button>
+                </div>
+            </div>
 
             <div className="bg-zinc-800 rounded-lg p-2.5 border border-red-500/50">
                 <div className="flex items-center justify-between">

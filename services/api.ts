@@ -597,3 +597,51 @@ export async function getTotalGastosByYear(year: number): Promise<number> {
     const monthly = await getGastosByYear(year);
     return monthly.reduce((sum, val) => sum + val, 0);
 }
+
+export async function removeDuplicates(): Promise<{ gastosRemoved: number, carrerasRemoved: number }> {
+    // Gastos
+    const allGastos = await getGastos();
+    const uniqueGastosMap = new Map<string, string>(); // hash -> id to keep
+    const gastosToDelete: string[] = [];
+
+    for (const g of allGastos) {
+        const d = g.fecha instanceof Date ? g.fecha : new Date(g.fecha);
+        // Create a unique hash for the content
+        const hash = `${d.toISOString()}_${g.importe}_${(g.concepto || '').trim()}_${(g.proveedor || '').trim()}_${(g.taller || '').trim()}`;
+
+        if (uniqueGastosMap.has(hash)) {
+            // Found a duplicate, mark for deletion
+            gastosToDelete.push(g.id);
+        } else {
+            // First time seeing this content, keep it
+            uniqueGastosMap.set(hash, g.id);
+        }
+    }
+
+    for (const id of gastosToDelete) {
+        await deleteGasto(id);
+    }
+
+    // Carreras
+    const allCarreras = await getCarreras();
+    const uniqueCarrerasMap = new Map<string, string>();
+    const carrerasToDelete: string[] = [];
+
+    for (const c of allCarreras) {
+        const d = c.fechaHora instanceof Date ? c.fechaHora : new Date(c.fechaHora);
+        // Create a unique hash for the content
+        const hash = `${d.toISOString()}_${c.cobrado}_${c.taximetro}_${c.formaPago}_${c.emisora}_${c.aeropuerto}`;
+
+        if (uniqueCarrerasMap.has(hash)) {
+            carrerasToDelete.push(c.id);
+        } else {
+            uniqueCarrerasMap.set(hash, c.id);
+        }
+    }
+
+    for (const id of carrerasToDelete) {
+        await deleteCarrera(id);
+    }
+
+    return { gastosRemoved: gastosToDelete.length, carrerasRemoved: carrerasToDelete.length };
+}
