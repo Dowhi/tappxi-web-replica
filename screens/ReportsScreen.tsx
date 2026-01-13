@@ -4,7 +4,7 @@ import ScreenTopBar from '../components/ScreenTopBar';
 import { useToast } from '../components/Toast';
 import { ErrorHandler } from '../services/errorHandler';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { getCarreras, getGastos, getTurnos } from '../services/api';
+import { getCarreras, getGastos, getTurnos, getProveedores } from '../services/api';
 import jsPDF from 'jspdf';
 
 // Importar jspdf-autotable - versión 5.x
@@ -34,6 +34,7 @@ const EXPENSE_COLUMNS: ColumnConfig[] = [
     { id: 'fecha', label: 'Fecha', width: 14, align: 'center', isDefault: true },
     { id: 'importe', label: '€', width: 11, align: 'right', isDefault: true },
     { id: 'proveedor', label: 'Proveedor', width: 34, align: 'left', isDefault: true },
+    { id: 'nif', label: 'NIF', width: 20, align: 'left', isDefault: true },
     { id: 'concepto', label: 'Concepto', width: 23, align: 'left', isDefault: true },
     { id: 'factura', label: 'Factura', width: 30, align: 'left', isDefault: true },
     { id: 'formaPago', label: 'F. Pago', width: 15, align: 'left', isDefault: true },
@@ -102,10 +103,11 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
             fechaHastaObj.setHours(23, 59, 59, 999);
 
             // Obtener todos los datos
-            const [carreras, gastos, turnos] = await Promise.all([
+            const [carreras, gastos, turnos, proveedores] = await Promise.all([
                 getCarreras(),
                 getGastos(),
-                getTurnos()
+                getTurnos(),
+                getProveedores()
             ]);
 
             // Filtrar por fechas
@@ -117,6 +119,13 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
             const gastosFiltrados = gastos.filter(g => {
                 const fecha = g.fecha instanceof Date ? g.fecha : new Date(g.fecha);
                 return fecha >= fechaDesdeObj && fecha <= fechaHastaObj;
+            }).map(g => {
+                // Enriquecer con NIF si falta (para gastos antiguos o si no se guardó)
+                if (!g.nif && g.proveedor) {
+                    const prov = proveedores.find(p => p.nombre.toLowerCase() === g.proveedor.toLowerCase());
+                    if (prov) return { ...g, nif: prov.nif };
+                }
+                return g;
             });
 
             const turnosFiltrados = turnos.filter(t => {
@@ -657,6 +666,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                             'fecha': fecha.toLocaleDateString('es-ES'),
                             'importe': g.importe?.toFixed(2) || '0.00',
                             'proveedor': g.proveedor || g.taller || 'Sin proveedor',
+                            'nif': g.nif || '',
                             'concepto': g.concepto || 'Sin concepto',
                             'factura': g.numeroFactura || 'Sin factura',
                             'formaPago': g.formaPago || 'N/A',
@@ -682,6 +692,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                                     'fecha': '',
                                     'importe': s.importe ? s.importe.toFixed(2) : '0.00',
                                     'proveedor': '',
+                                    'nif': '',
                                     'concepto': s.descripcion || 'Sin descripción',
                                     'factura': s.referencia || 'Sin ref.',
                                     'formaPago': s.precio ? s.precio.toFixed(2) : '0.00', // Reutilizado

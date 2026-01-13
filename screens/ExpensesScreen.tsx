@@ -515,11 +515,16 @@ const ExpensesScreen: React.FC<ExpensesScreenProps> = ({ navigateTo, gastoId }) 
                 fechaGasto = new Date();
             }
 
+            // Buscar NIF del proveedor si existe
+            const selectedProveedor = proveedoresList.find(p => p.nombre.toLowerCase() === proveedorName.trim().toLowerCase());
+            const nif = selectedProveedor ? selectedProveedor.nif : null;
+
             const gastoData: any = {
                 importe: importeValue,
                 fecha: fechaGasto,
                 formaPago: formaPago || 'Efectivo',
-                tipo: activeTab // SIEMPRE guardar el tipo
+                tipo: activeTab, // SIEMPRE guardar el tipo
+                nif: nif // Guardar NIF para informes
             };
 
             // En modo edición, inicializar todos los campos para asegurar que se actualicen
@@ -539,6 +544,7 @@ const ExpensesScreen: React.FC<ExpensesScreenProps> = ({ navigateTo, gastoId }) 
                 gastoData.descuento = null;
                 gastoData.servicios = null;
                 gastoData.notas = null;
+                gastoData.nif = null;
             }
 
             // Campos comunes (aplican a ambos tipos)

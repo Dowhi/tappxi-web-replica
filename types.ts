@@ -120,6 +120,7 @@ export interface Gasto {
         descripcion?: string;
     }>;
     notas?: string;
+    nif?: string | null;
 }
 
 export interface Taller {
