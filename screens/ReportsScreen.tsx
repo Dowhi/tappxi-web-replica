@@ -4,7 +4,7 @@ import ScreenTopBar from '../components/ScreenTopBar';
 import { useToast } from '../components/Toast';
 import { ErrorHandler } from '../services/errorHandler';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { getCarreras, getGastos, getTurnos, getProveedores } from '../services/api';
+import { getCarreras, getGastos, getTurnos, getProveedores, getTalleres } from '../services/api';
 import jsPDF from 'jspdf';
 
 // Importar jspdf-autotable - versión 5.x
@@ -103,11 +103,12 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
             fechaHastaObj.setHours(23, 59, 59, 999);
 
             // Obtener todos los datos
-            const [carreras, gastos, turnos, proveedores] = await Promise.all([
+            const [carreras, gastos, turnos, proveedores, talleres] = await Promise.all([
                 getCarreras(),
                 getGastos(),
                 getTurnos(),
-                getProveedores()
+                getProveedores(),
+                getTalleres()
             ]);
 
             // Filtrar por fechas
@@ -121,9 +122,14 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                 return fecha >= fechaDesdeObj && fecha <= fechaHastaObj;
             }).map(g => {
                 // Enriquecer con NIF si falta (para gastos antiguos o si no se guardó)
-                if (!g.nif && g.proveedor) {
-                    const prov = proveedores.find(p => p.nombre.toLowerCase() === g.proveedor.toLowerCase());
-                    if (prov) return { ...g, nif: prov.nif };
+                if (!g.nif) {
+                    if (g.proveedor) {
+                        const prov = proveedores.find(p => p.nombre.toLowerCase() === g.proveedor.toLowerCase());
+                        if (prov) return { ...g, nif: prov.nif };
+                    } else if (g.taller) {
+                        const tall = talleres.find(t => t.nombre.toLowerCase() === g.taller.toLowerCase());
+                        if (tall) return { ...g, nif: tall.nif };
+                    }
                 }
                 return g;
             });

@@ -150,6 +150,7 @@ const ExpensesScreen: React.FC<ExpensesScreenProps> = ({ navigateTo, gastoId }) 
     const [modalTallerName, setModalTallerName] = useState('');
     const [modalTallerDireccion, setModalTallerDireccion] = useState('');
     const [modalTallerTelefono, setModalTallerTelefono] = useState('');
+    const [modalTallerNIF, setModalTallerNIF] = useState('');
     const [modalTallerSaving, setModalTallerSaving] = useState(false);
 
     // Estados para guardado
@@ -420,33 +421,36 @@ const ExpensesScreen: React.FC<ExpensesScreenProps> = ({ navigateTo, gastoId }) 
 
     const handleSaveTaller = async () => {
         if (!modalTallerName.trim()) {
-            alert('El nombre del taller es obligatorio');
+            showToast('El nombre del taller es obligatorio', 'error');
             return;
         }
 
         setModalTallerSaving(true);
         try {
-            await addTaller({
-                nombre: modalTallerName,
-                direccion: modalTallerDireccion || null,
-                telefono: modalTallerTelefono || null
-            });
+            const newTaller: Omit<Taller, 'id'> = {
+                nombre: modalTallerName.trim(),
+                direccion: modalTallerDireccion.trim() || null,
+                telefono: modalTallerTelefono.trim() || null,
+                nif: modalTallerNIF.trim() || null
+            };
 
-            // Actualizar lista
-            const talleres = await getTalleres();
-            setTalleresList(talleres);
+            await addTaller(newTaller);
+            showToast('Taller guardado correctamente', 'success');
 
-            // Establecer el nombre seleccionado
-            setTallerName(modalTallerName);
-
-            // Cerrar modal y limpiar
+            // Actualizar lista y cerrar modal
+            const updatedTalleres = await getTalleres();
+            setTalleresList(updatedTalleres);
+            setTallerName(modalTallerName.trim());
             setShowTallerModal(false);
+
+            // Limpiar campos
             setModalTallerName('');
             setModalTallerDireccion('');
             setModalTallerTelefono('');
+            setModalTallerNIF('');
         } catch (err) {
-            console.error('Error saving taller:', err);
-            alert('Error al guardar el taller');
+            ErrorHandler.handle(err, 'Error al guardar el taller');
+            showToast('Error al guardar el taller', 'error');
         } finally {
             setModalTallerSaving(false);
         }
@@ -464,7 +468,7 @@ const ExpensesScreen: React.FC<ExpensesScreenProps> = ({ navigateTo, gastoId }) 
 
         try {
             await deleteGasto(gastoId);
-            alert('Gasto eliminado correctamente');
+            showToast('Gasto eliminado correctamente', 'success');
             navigateTo(Seccion.ResumenGastosMensual);
         } catch (err) {
             console.error('Error deleting expense:', err);
@@ -515,9 +519,15 @@ const ExpensesScreen: React.FC<ExpensesScreenProps> = ({ navigateTo, gastoId }) 
                 fechaGasto = new Date();
             }
 
-            // Buscar NIF del proveedor si existe
-            const selectedProveedor = proveedoresList.find(p => p.nombre.toLowerCase() === proveedorName.trim().toLowerCase());
-            const nif = selectedProveedor ? selectedProveedor.nif : null;
+            // Buscar NIF del proveedor o taller si existe
+            let nif = null;
+            if (activeTab === 'actividad') {
+                const selectedProveedor = proveedoresList.find(p => p.nombre.toLowerCase() === proveedorName.trim().toLowerCase());
+                nif = selectedProveedor ? selectedProveedor.nif : null;
+            } else if (activeTab === 'vehiculo') {
+                const selectedTaller = talleresList.find(t => t.nombre.toLowerCase() === tallerName.trim().toLowerCase());
+                nif = selectedTaller ? selectedTaller.nif : null;
+            }
 
             const gastoData: any = {
                 importe: importeValue,
@@ -1614,6 +1624,12 @@ const ExpensesScreen: React.FC<ExpensesScreenProps> = ({ navigateTo, gastoId }) 
                                         onChange={(e) => setModalTallerTelefono(e.target.value)}
                                     />
                                 </FormField>
+                                <FormField label="NIF">
+                                    <TextInput
+                                        value={modalTallerNIF}
+                                        onChange={(e) => setModalTallerNIF(e.target.value)}
+                                    />
+                                </FormField>
                                 <div className="flex gap-2">
                                     <PrimaryButton onClick={handleSaveTaller} disabled={modalTallerSaving} className="flex-1">
                                         {modalTallerSaving ? 'Guardando...' : 'Guardar'}
@@ -1624,6 +1640,7 @@ const ExpensesScreen: React.FC<ExpensesScreenProps> = ({ navigateTo, gastoId }) 
                                             setModalTallerName('');
                                             setModalTallerDireccion('');
                                             setModalTallerTelefono('');
+                                            setModalTallerNIF('');
                                         }}
                                         className="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors"
                                     >

@@ -128,6 +128,7 @@ export interface Taller {
     nombre: string;
     direccion?: string | null;
     telefono?: string | null;
+    nif?: string | null;
 }
 
 export interface Proveedor {
