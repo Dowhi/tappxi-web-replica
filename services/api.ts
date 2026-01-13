@@ -447,6 +447,12 @@ export async function restoreConcepto(concepto: any): Promise<void> {
 export async function restoreTaller(taller: any): Promise<void> {
     await addItem('talleres', taller.id, taller);
 }
+export async function restoreValeDirectoryEntry(entry: any): Promise<void> {
+    await addItem('vales', entry.id, entry);
+}
+export async function restoreReminder(reminder: any): Promise<void> {
+    await addItem('reminders', reminder.id, reminder);
+}
 
 /** Statistics Helpers */
 export async function getIngresosForCurrentMonth(): Promise<number> {
