@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Seccion, Proveedor, Concepto } from '../types';
+import { Seccion, Proveedor, Concepto, Taller } from '../types';
 import ScreenTopBar from '../components/ScreenTopBar';
 import {
     getProveedores,
@@ -7,7 +7,10 @@ import {
     deleteProveedor,
     getConceptos,
     updateConcepto,
-    deleteConcepto
+    deleteConcepto,
+    getTalleres,
+    updateTaller,
+    deleteTaller
 } from '../services/api';
 import { useToast } from '../components/Toast';
 
@@ -15,7 +18,7 @@ interface MasterDataScreenProps {
     navigateTo: (page: Seccion) => void;
 }
 
-type Tab = 'proveedores' | 'conceptos';
+type Tab = 'proveedores' | 'conceptos' | 'talleres';
 
 export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }) => {
     const { showToast } = useToast();
@@ -25,6 +28,7 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
     // Data lists
     const [proveedores, setProveedores] = useState<Proveedor[]>([]);
     const [conceptos, setConceptos] = useState<Concepto[]>([]);
+    const [talleres, setTalleres] = useState<Taller[]>([]);
 
     // Edit Modal State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -39,9 +43,12 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
             if (activeTab === 'proveedores') {
                 const data = await getProveedores();
                 setProveedores(data.sort((a, b) => a.nombre.localeCompare(b.nombre)));
-            } else {
+            } else if (activeTab === 'conceptos') {
                 const data = await getConceptos();
                 setConceptos(data.sort((a, b) => a.nombre.localeCompare(b.nombre)));
+            } else {
+                const data = await getTalleres();
+                setTalleres(data.sort((a, b) => a.nombre.localeCompare(b.nombre)));
             }
         } catch (error) {
             console.error('Error loading data:', error);
@@ -65,10 +72,16 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
                 telefono: item.telefono || '',
                 nif: item.nif || ''
             });
-        } else {
+        } else if (activeTab === 'conceptos') {
             setItemDetails({
                 descripcion: item.descripcion || '',
                 categoria: item.categoria || ''
+            });
+        } else {
+            setItemDetails({
+                direccion: item.direccion || '',
+                telefono: item.telefono || '',
+                nif: item.nif || ''
             });
         }
         setIsEditModalOpen(true);
@@ -82,8 +95,10 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
         try {
             if (activeTab === 'proveedores') {
                 await deleteProveedor(id);
-            } else {
+            } else if (activeTab === 'conceptos') {
                 await deleteConcepto(id);
+            } else {
+                await deleteTaller(id);
             }
             showToast('Elemento eliminado correctamente', 'success');
             loadData();
@@ -107,11 +122,18 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
                     telefono: itemDetails.telefono || null,
                     nif: itemDetails.nif || null
                 });
-            } else {
+            } else if (activeTab === 'conceptos') {
                 await updateConcepto(currentItem.id, {
                     nombre: itemName,
                     descripcion: itemDetails.descripcion || null,
                     categoria: itemDetails.categoria || null
+                });
+            } else {
+                await updateTaller(currentItem.id, {
+                    nombre: itemName,
+                    direccion: itemDetails.direccion || null,
+                    telefono: itemDetails.telefono || null,
+                    nif: itemDetails.nif || null
                 });
             }
             showToast('Cambios guardados', 'success');
@@ -148,6 +170,15 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
                     >
                         Conceptos ({conceptos.length})
                     </button>
+                    <button
+                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'talleres'
+                            ? 'border-blue-500 text-blue-400'
+                            : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                            }`}
+                        onClick={() => setActiveTab('talleres')}
+                    >
+                        Talleres ({talleres.length})
+                    </button>
                 </div>
 
                 {/* List */}
@@ -155,13 +186,13 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
                     <div className="text-center py-8 text-zinc-500">Cargando...</div>
                 ) : (
                     <div className="space-y-2">
-                        {(activeTab === 'proveedores' ? proveedores : conceptos).length === 0 && (
+                        {(activeTab === 'proveedores' ? proveedores : activeTab === 'conceptos' ? conceptos : talleres).length === 0 && (
                             <div className="text-center py-8 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                                 No hay elementos registrados.
                             </div>
                         )}
 
-                        {(activeTab === 'proveedores' ? proveedores : conceptos).map((item) => (
+                        {(activeTab === 'proveedores' ? proveedores : activeTab === 'conceptos' ? conceptos : talleres).map((item) => (
                             <div
                                 key={item.id}
                                 className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800/80 transition-colors"
@@ -173,7 +204,9 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
                                             ? ''
                                             : activeTab === 'proveedores'
                                                 ? (item as Proveedor).nif || (item as Proveedor).telefono || 'Sin detalles'
-                                                : (item as Concepto).categoria || 'Sin categoría'
+                                                : activeTab === 'conceptos'
+                                                    ? (item as Concepto).categoria || 'Sin categoría'
+                                                    : (item as Taller).nif || (item as Taller).telefono || 'Sin detalles'
                                         }
                                     </div>
                                 </div>
@@ -210,7 +243,7 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
 
-                        <h3 className="text-lg font-bold">Editar {activeTab === 'proveedores' ? 'Proveedor' : 'Concepto'}</h3>
+                        <h3 className="text-lg font-bold">Editar {activeTab === 'proveedores' ? 'Proveedor' : activeTab === 'conceptos' ? 'Concepto' : 'Taller'}</h3>
 
                         <div className="space-y-3">
                             <div>
@@ -223,7 +256,7 @@ export const MasterDataScreen: React.FC<MasterDataScreenProps> = ({ navigateTo }
                                 />
                             </div>
 
-                            {activeTab === 'proveedores' && (
+                            {(activeTab === 'proveedores' || activeTab === 'talleres') && (
                                 <>
                                     <div>
                                         <label className="block text-sm font-medium text-zinc-400 mb-1">NIF (Opcional)</label>

@@ -178,6 +178,16 @@ export async function addTaller(taller: Omit<Taller, 'id'> & { id?: string }): P
     return key;
 }
 
+export async function updateTaller(id: string, updates: Partial<Taller>): Promise<void> {
+    const existing = await getItem<Taller>('talleres', id);
+    if (!existing) throw new Error('Taller not found');
+    await addItem('talleres', id, { ...existing, ...updates });
+}
+
+export async function deleteTaller(id: string): Promise<void> {
+    await deleteItem('talleres', id);
+}
+
 export async function closeTurno(id: string, kilometrosFin: number): Promise<void> {
     const turno = await getItem<Turno>('turnos', id);
     if (!turno) throw new Error('Turno no encontrado');
