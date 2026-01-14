@@ -11,6 +11,24 @@ import { exportToExcel, exportToCSV, exportToPDFAdvanced, exportToHacienda, Expo
 import { getCarreras, getGastos, getRecentTurnos } from "../services/api";
 import { saveCustomReport, getCustomReports, deleteCustomReport, markReportAsUsed, CustomReport } from "../services/customReports";
 
+const parseSafeDate = (d: any): Date => {
+    if (d instanceof Date) return d;
+    if (!d) return new Date(0);
+
+    if (typeof d === 'string' && d.includes('/')) {
+        const parts = d.split('/');
+        if (parts.length === 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            return new Date(year, month, day);
+        }
+    }
+
+    const parsed = new Date(d);
+    return isNaN(parsed.getTime()) ? new Date(0) : parsed;
+};
+
 interface AjustesScreenProps {
     navigateTo: (page: Seccion) => void;
 }
@@ -825,13 +843,36 @@ const AjustesScreen: React.FC<AjustesScreenProps> = ({ navigateTo }) => {
             let turnosFiltrados = turnos;
 
             if (filtros.fechaDesde && filtros.fechaHasta) {
+                const start = new Date(filtros.fechaDesde);
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(filtros.fechaHasta);
+                end.setHours(23, 59, 59, 999);
+
                 carrerasFiltradas = carreras.filter(c => {
-                    const fecha = c.fechaHora instanceof Date ? c.fechaHora : new Date(c.fechaHora);
-                    return fecha >= filtros.fechaDesde! && fecha <= filtros.fechaHasta!;
+                    const fecha = parseSafeDate(c.fechaHora);
+                    const matchDate = fecha >= start && fecha <= end;
+                    if (!matchDate) return false;
+
+                    if (filtros.formaPago && c.formaPago !== filtros.formaPago) return false;
+                    return true;
                 });
+
                 gastosFiltrados = gastos.filter(g => {
-                    const fecha = g.fecha instanceof Date ? g.fecha : new Date(g.fecha);
-                    return fecha >= filtros.fechaDesde! && fecha <= filtros.fechaHasta!;
+                    const fecha = parseSafeDate(g.fecha);
+                    const matchDate = fecha >= start && fecha <= end;
+                    if (!matchDate) return false;
+
+                    if (filtros.proveedor && !g.proveedor?.toLowerCase().includes(filtros.proveedor.toLowerCase())) return false;
+                    if (filtros.concepto && !g.concepto?.toLowerCase().includes(filtros.concepto.toLowerCase())) return false;
+                    if (filtros.taller && !g.taller?.toLowerCase().includes(filtros.taller.toLowerCase())) return false;
+                    if (filtros.formaPago && g.formaPago !== filtros.formaPago) return false;
+
+                    return true;
+                });
+
+                turnosFiltrados = turnos.filter(t => {
+                    const fecha = parseSafeDate(t.fechaInicio);
+                    return fecha >= start && fecha <= end;
                 });
             }
 
@@ -1637,11 +1678,11 @@ const AjustesScreen: React.FC<AjustesScreenProps> = ({ navigateTo }) => {
                                         )}
                                         <div className="flex gap-2 mt-1.5">
                                             <span className="text-xs px-2 py-0.5 rounded bg-blue-900/50 text-blue-300">
-                                                {reporte.tipoExportacion.toUpperCase()}
+                                                {(reporte.tipoExportacion || 'pdf').toUpperCase()}
                                             </span>
                                             {reporte.lastUsed && (
                                                 <span className="text-xs text-zinc-500">
-                                                    Usado: {reporte.lastUsed.toLocaleDateString('es-ES')}
+                                                    Usado: {(reporte.lastUsed instanceof Date ? reporte.lastUsed : new Date(reporte.lastUsed)).toLocaleDateString('es-ES')}
                                                 </span>
                                             )}
                                         </div>

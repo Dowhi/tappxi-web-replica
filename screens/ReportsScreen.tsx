@@ -7,6 +7,24 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { getCarreras, getGastos, getTurnos, getProveedores, getTalleres } from '../services/api';
 import jsPDF from 'jspdf';
 
+const parseSafeDate = (d: any): Date => {
+    if (d instanceof Date) return d;
+    if (!d) return new Date(0);
+
+    if (typeof d === 'string' && d.includes('/')) {
+        const parts = d.split('/');
+        if (parts.length === 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            return new Date(year, month, day);
+        }
+    }
+
+    const parsed = new Date(d);
+    return isNaN(parsed.getTime()) ? new Date(0) : parsed;
+};
+
 // Importar jspdf-autotable - versión 5.x
 // @ts-ignore
 import * as autoTableModule from 'jspdf-autotable';
@@ -113,21 +131,21 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
 
             // Filtrar por fechas
             const carrerasFiltradas = carreras.filter(c => {
-                const fecha = c.fechaHora instanceof Date ? c.fechaHora : new Date(c.fechaHora);
+                const fecha = parseSafeDate(c.fechaHora);
                 return fecha >= fechaDesdeObj && fecha <= fechaHastaObj;
             });
 
             const gastosFiltrados = gastos.filter(g => {
-                const fecha = g.fecha instanceof Date ? g.fecha : new Date(g.fecha);
+                const fecha = parseSafeDate(g.fecha);
                 return fecha >= fechaDesdeObj && fecha <= fechaHastaObj;
             }).map(g => {
                 // Enriquecer con NIF si falta (para gastos antiguos o si no se guardó)
                 if (!g.nif) {
                     if (g.proveedor) {
-                        const prov = proveedores.find(p => p.nombre.toLowerCase() === g.proveedor.toLowerCase());
+                        const prov = proveedores.find(p => p.nombre && p.nombre.toLowerCase() === g.proveedor!.toLowerCase());
                         if (prov) return { ...g, nif: prov.nif };
                     } else if (g.taller) {
-                        const tall = talleres.find(t => t.nombre.toLowerCase() === g.taller.toLowerCase());
+                        const tall = talleres.find(t => t.nombre && t.nombre.toLowerCase() === g.taller!.toLowerCase());
                         if (tall) return { ...g, nif: tall.nif };
                     }
                 }
@@ -135,7 +153,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
             });
 
             const turnosFiltrados = turnos.filter(t => {
-                const fecha = t.fechaInicio instanceof Date ? t.fechaInicio : new Date(t.fechaInicio);
+                const fecha = parseSafeDate(t.fechaInicio);
                 return fecha >= fechaDesdeObj && fecha <= fechaHastaObj;
             });
 
@@ -148,7 +166,7 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                 if (filtros.gastosFiltro === 'actividad') {
                     // Filtrar solo gastos de actividad (tipo === 'actividad' o 'Actividad')
                     gastosFinales = gastosFinales.filter(g => {
-                        const tipo = g.tipo?.toLowerCase();
+                        const tipo = g.tipo?.toLowerCase() || '';
                         return tipo === 'actividad' || (!tipo && (g.proveedor || g.concepto) && !g.kilometrosVehiculo);
                     });
                 } else if (filtros.gastosFiltro === 'vehiculo') {
@@ -195,9 +213,9 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                     console.log(`Filtro Vehículo: ${gastosFinales.length} gastos encontrados de ${gastosAntes} totales`);
                     console.log('Gastos filtrados:', gastosFinales.map(g => ({ id: g.id, tipo: g.tipo, taller: g.taller })));
                 } else if (filtros.gastosFiltro === 'conceptos' && filtros.concepto) {
-                    gastosFinales = gastosFinales.filter(g => g.concepto?.toLowerCase().includes(filtros.concepto!.toLowerCase()));
+                    gastosFinales = gastosFinales.filter(g => g.concepto && g.concepto.toLowerCase().includes(filtros.concepto!.toLowerCase()));
                 } else if (filtros.gastosFiltro === 'proveedores' && filtros.proveedor) {
-                    gastosFinales = gastosFinales.filter(g => g.proveedor?.toLowerCase().includes(filtros.proveedor!.toLowerCase()));
+                    gastosFinales = gastosFinales.filter(g => g.proveedor && g.proveedor.toLowerCase().includes(filtros.proveedor!.toLowerCase()));
                 } else if (filtros.gastosFiltro === 'iva') {
                     // Filtrar solo gastos con IVA > 0
                     gastosFinales = gastosFinales.filter(g => g.ivaPorcentaje != null && Number(g.ivaPorcentaje) > 0);
