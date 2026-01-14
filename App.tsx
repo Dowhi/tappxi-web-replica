@@ -32,6 +32,7 @@ import TrainStationScreen from './screens/TrainStationScreen';
 import FlightStationScreen from './screens/FlightStationScreen';
 import MasterDataScreen from './screens/MasterDataScreen';
 import BottomNavBar from './components/BottomNavBar';
+import SplashScreen from './components/SplashScreen';
 
 
 const App: React.FC = () => {
@@ -42,6 +43,7 @@ const App: React.FC = () => {
     const [editingTurnoId, setEditingTurnoId] = useState<string | null>(null);
     const [editingGastoId, setEditingGastoId] = useState<string | null>(null);
     const [refreshGastosKey, setRefreshGastosKey] = useState(0);
+    const [showSplash, setShowSplash] = useState(true);
     const { isDark } = useTheme();
 
     // Iniciar verificación de recordatorios con sonido
@@ -220,6 +222,11 @@ const App: React.FC = () => {
 
     return (
         <ErrorHandlerSetup>
+            <AnimatePresence>
+                {showSplash && (
+                    <SplashScreen onVideoEnd={() => setShowSplash(false)} />
+                )}
+            </AnimatePresence>
             <div className={`${appBgClass} min-h-screen font-sans overflow-hidden`}>
                 <main className="w-full pb-24 h-full relative">
                     <AnimatePresence mode="wait">
