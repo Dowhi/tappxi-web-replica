@@ -759,9 +759,10 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                 gastos.forEach(g => {
                     let key;
                     if (esVehiculo) {
-                        key = g.taller || 'Sin taller';
+                        key = g.taller || 'Otros Talleres';
                     } else {
-                        key = g.proveedor || 'Sin proveedor';
+                        // Priorizar Proveedor, luego Taller, y finalmente 'Otros Proveedores'
+                        key = g.proveedor || g.taller || 'Otros Proveedores';
                     }
                     gastosAgrupados[key] = (gastosAgrupados[key] || 0) + (g.importe || 0);
                 });
