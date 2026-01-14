@@ -772,34 +772,32 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                 doc.setFontSize(10);
 
                 const resumenEntries = Object.entries(gastosAgrupados).sort((a, b) => b[1] - a[1]);
-                const midPoint = Math.ceil(resumenEntries.length / 2);
-                const col1 = resumenEntries.slice(0, midPoint);
-                const col2 = resumenEntries.slice(midPoint);
+                const resumenBody: any[] = [];
+                for (let i = 0; i < resumenEntries.length; i += 2) {
+                    resumenBody.push([
+                        resumenEntries[i][0],
+                        `${resumenEntries[i][1].toFixed(2)} €`,
+                        resumenEntries[i + 1] ? resumenEntries[i + 1][0] : '',
+                        resumenEntries[i + 1] ? `${resumenEntries[i + 1][1].toFixed(2)} €` : ''
+                    ]);
+                }
 
-                // Track max Y to continue after current block
-                let startY = yPos;
-                let maxY = yPos;
-
-                // Columna 1
-                col1.forEach(([nombre, total]) => {
-                    doc.text(`${nombre}: ${total.toFixed(2)} €`, 20, yPos);
-                    yPos += 5;
+                // @ts-ignore
+                autoTableModule.default(doc, {
+                    startY: yPos,
+                    head: [['Proveedor / Concepto', 'Importe', 'Proveedor / Concepto', 'Importe']],
+                    body: resumenBody,
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 1.5 },
+                    headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
+                    columnStyles: {
+                        1: { halign: 'right', cellWidth: 25 },
+                        3: { halign: 'right', cellWidth: 25 }
+                    },
+                    margin: { left: 14, right: 14 }
                 });
-                maxY = Math.max(maxY, yPos);
 
-                // Reset for Column 2
-                yPos = startY;
-                const col2X = pageWidth / 2 + 10;
-
-                // Columna 2
-                col2.forEach(([nombre, total]) => {
-                    doc.text(`${nombre}: ${total.toFixed(2)} €`, col2X, yPos);
-                    yPos += 5;
-                });
-                maxY = Math.max(maxY, yPos);
-
-                // Set final Y pos
-                yPos = maxY + 5;
+                yPos = (doc as any).lastAutoTable.finalY + 10;
 
                 // Resumen de IVA
                 const ivaPorTipo: { [key: string]: { porcentaje: number; base: number; iva: number } } = {};
@@ -814,13 +812,30 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                 });
 
                 doc.setFontSize(12);
-                doc.text('Resumen de IVA:', 14, yPos);
-                yPos += 6;
-                doc.setFontSize(10);
-                Object.entries(ivaPorTipo).forEach(([tipo, datos]) => {
-                    doc.text(`${tipo}: Base ${datos.base.toFixed(2)} € | IVA ${datos.iva.toFixed(2)} €`, 20, yPos);
-                    yPos += 5;
+                doc.text('RESUMEN DE IVA', 14, yPos);
+                yPos += 5;
+
+                const ivaBody = Object.entries(ivaPorTipo).map(([tipo, datos]) => [
+                    tipo,
+                    `${datos.base.toFixed(2)} €`,
+                    `${datos.iva.toFixed(2)} €`
+                ]);
+
+                // @ts-ignore
+                autoTableModule.default(doc, {
+                    startY: yPos,
+                    head: [['Tipo IVA', 'Base Imponible', 'Cuota IVA']],
+                    body: ivaBody,
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 1.5, halign: 'center' },
+                    headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
+                    columnStyles: {
+                        1: { halign: 'right' },
+                        2: { halign: 'right' }
+                    },
+                    margin: { left: 14, right: 100 } // Más estrecho para IVA
                 });
+                yPos = (doc as any).lastAutoTable.finalY + 10;
             } else {
                 doc.setFontSize(10);
                 doc.text('No hay gastos en el período seleccionado', 14, yPos);
