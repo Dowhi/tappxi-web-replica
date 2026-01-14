@@ -689,33 +689,6 @@ const ReportsScreen: React.FC<ReportsScreenProps> = ({ navigateTo }) => {
                             }
                         });
                         tableBody.push(row);
-
-                        // Si es vehículo con servicios, agregar filas de servicios
-                        if (esVehiculoConServicios) {
-                            g.servicios.forEach((s: any) => {
-                                const subRow: string[] = [];
-                                const subValMap: any = {
-                                    'fecha': '',
-                                    'importe': s.importe ? s.importe.toFixed(2) : '0.00',
-                                    'proveedor': '',
-                                    'nif': '',
-                                    'concepto': s.descripcion || 'Sin descripción',
-                                    'factura': s.referencia || 'Sin ref.',
-                                    'formaPago': s.precio ? s.precio.toFixed(2) : '0.00', // Reutilizado
-                                    'base': s.descuento ? s.descuento.toFixed(2) : '0.00', // Reutilizado
-                                    'ivaPorcentaje': '',
-                                    'ivaImporte': '',
-                                    'kms': s.cantidad || '1', // Reutilizado
-                                    'notas': ''
-                                };
-                                EXPENSE_COLUMNS.forEach(col => {
-                                    if (selectedExpenseCols.includes(col.id)) {
-                                        subRow.push(subValMap[col.id]);
-                                    }
-                                });
-                                tableBody.push(subRow);
-                            });
-                        }
                     });
                 });
 
