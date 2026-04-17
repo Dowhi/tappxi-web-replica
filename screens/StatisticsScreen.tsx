@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Seccion, CarreraVista } from '../types';
 import ScreenTopBar from '../components/ScreenTopBar';
 import { getCarrerasByDate, getGastosByDate, isRestDay, getCarreras } from '../services/api';
@@ -217,7 +217,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                     {/* Eje Y - líneas de referencia */}
                     {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
                         const y = height - 20 - (ratio * maxBarHeight);
-                        const value = (maxValue * ratio).toFixed(0);
+                        const value = (maxValue * ratio ?? 0).toFixed(0);
                         return (
                             <g key={ratio}>
                                 <line
@@ -371,8 +371,8 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                 {/* Etiquetas */}
                 <div className="flex justify-between mt-2 text-xs text-zinc-500 px-2">
                     <span>0€</span>
-                    <span className="text-green-400">+{maxBalance.toFixed(0)}€</span>
-                    <span className="text-red-400">{minBalance.toFixed(0)}€</span>
+                    <span className="text-green-400">+(maxBalance ?? 0).toFixed(0)}€</span>
+                    <span className="text-red-400">{(minBalance ?? 0).toFixed(0)}€</span>
                 </div>
             </div>
         );
@@ -437,13 +437,13 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                 <div className="bg-zinc-800 rounded-lg p-1 flex flex-col items-center justify-center">
                                     <div className="text-zinc-400 text-xs mb-1 text-center">Ingresos</div>
                                     <div className="text-green-400 text-lg  w-full text-center whitespace-nowrap">
-                                        {stats.totalIngresos.toFixed(2)}€
+                                        {(stats.totalIngresos ?? 0).toFixed(2)}€
                                     </div>
                                 </div>
                                 <div className="bg-zinc-800 rounded-lg p-1 flex flex-col items-center justify-center">
                                     <div className="text-zinc-400 text-xs mb-1 text-center">Gastos</div>
                                     <div className="text-red-400 text-lg  w-full text-center whitespace-nowrap">
-                                        {stats.totalGastos.toFixed(2)}€
+                                        {(stats.totalGastos ?? 0).toFixed(2)}€
                                     </div>
                                 </div>
                                 <div className="bg-zinc-800 rounded-lg p-1 flex flex-col items-center justify-center">
@@ -452,7 +452,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                         className={`text-lg  w-full text-first whitespace-nowrap ${stats.totalBalance >= 0 ? 'text-green-400' : 'text-red-400'
                                             }`}
                                     >
-                                        {stats.totalBalance.toFixed(2)}€
+                                        {(stats.totalBalance ?? 0).toFixed(2)}€
                                     </div>
                                 </div>
                             </div>
@@ -498,13 +498,13 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                     <div className="bg-zinc-800 rounded-lg p-3">
                                         <div className="text-zinc-400 text-xs mb-1">Promedio Diario Ingresos</div>
                                         <div className="text-white text-lg font-bold">
-                                            {stats.promedioDiarioIngresos.toFixed(2)}€
+                                            {(stats.promedioDiarioIngresos ?? 0).toFixed(2)}€
                                         </div>
                                     </div>
                                     <div className="bg-zinc-800 rounded-lg p-3">
                                         <div className="text-zinc-400 text-xs mb-1">Promedio Diario Gastos</div>
                                         <div className="text-white text-lg font-bold">
-                                            {stats.promedioDiarioGastos.toFixed(2)}€
+                                            {(stats.promedioDiarioGastos ?? 0).toFixed(2)}€
                                         </div>
                                     </div>
                                 </div>
@@ -519,7 +519,9 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                     <div className="bg-zinc-800 rounded-lg p-3">
                                         <div className="text-zinc-400 text-xs mb-1">Promedio Carreras/Día</div>
                                         <div className="text-white text-lg font-bold">
-                                            {stats.promedioCarrerasPorDia.toFixed(1)}
+                                        <div className="text-white text-lg font-bold">
+                                            {(stats.promedioCarrerasPorDia ?? 0).toFixed(1)}
+                                        </div>
                                         </div>
                                     </div>
                                 </div>
@@ -535,11 +537,11 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                             })}
                                         </div>
                                         <div className="text-green-400 text-lg font-bold">
-                                            +{stats.mejorDia.balance.toFixed(2)}€
+                                            +{(stats.mejorDia.balance ?? 0).toFixed(2)}€
                                         </div>
                                         <div className="text-zinc-400 text-xs mt-1">
-                                            Ingresos: {stats.mejorDia.ingresos.toFixed(2)}€ |
-                                            Gastos: {stats.mejorDia.gastos.toFixed(2)}€ |
+                                            Ingresos: {(stats.mejorDia.ingresos ?? 0).toFixed(2)}€ |
+                                            Gastos: {(stats.mejorDia.gastos ?? 0).toFixed(2)}€ |
                                             Carreras: {stats.mejorDia.numCarreras}
                                         </div>
                                     </div>
@@ -556,11 +558,11 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                             })}
                                         </div>
                                         <div className="text-red-400 text-lg font-bold">
-                                            {stats.peorDia.balance.toFixed(2)}€
+                                            {(stats.peorDia.balance ?? 0).toFixed(2)}€
                                         </div>
                                         <div className="text-zinc-400 text-xs mt-1">
-                                            Ingresos: {stats.peorDia.ingresos.toFixed(2)}€ |
-                                            Gastos: {stats.peorDia.gastos.toFixed(2)}€ |
+                                            Ingresos: {(stats.peorDia.ingresos ?? 0).toFixed(2)}€ |
+                                            Gastos: {(stats.peorDia.gastos ?? 0).toFixed(2)}€ |
                                             Carreras: {stats.peorDia.numCarreras}
                                         </div>
                                     </div>
@@ -627,10 +629,10 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                                 </div>
                                                                 <div className="text-right">
                                                                     <div className="text-white font-bold">
-                                                                        {hour.totalIngresos.toFixed(2)}€
+                                                                        {(hour.totalIngresos ?? 0).toFixed(2)}€
                                                                     </div>
                                                                     <div className="text-zinc-400 text-xs">
-                                                                        {hour.promedioPorCarrera.toFixed(2)}€/carrera
+                                                                        {(hour.promedioPorCarrera ?? 0).toFixed(2)}€/carrera
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -641,7 +643,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                                 ></div>
                                                             </div>
                                                             <div className="text-zinc-500 text-xs mt-1">
-                                                                {hour.porcentajeDelTotal.toFixed(1)}% del total
+                                                                {(hour.porcentajeDelTotal ?? 0).toFixed(1)}% del total
                                                             </div>
                                                         </div>
                                                     ))}
@@ -668,10 +670,10 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                                     </div>
                                                                     <div className="text-right">
                                                                         <div className="text-white font-bold">
-                                                                            {day.totalIngresos.toFixed(2)}€
+                                                                            {(day.totalIngresos ?? 0).toFixed(2)}€
                                                                         </div>
                                                                         <div className="text-zinc-400 text-xs">
-                                                                            {day.promedioPorCarrera.toFixed(2)}€/carrera
+                                                                            {(day.promedioPorCarrera ?? 0).toFixed(2)}€/carrera
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -682,7 +684,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                                     ></div>
                                                                 </div>
                                                                 <div className="text-zinc-500 text-xs mt-1">
-                                                                    {day.porcentajeDelTotal.toFixed(1)}% del total
+                                                                    {(day.porcentajeDelTotal ?? 0).toFixed(1)}% del total
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -706,10 +708,10 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                                 </div>
                                                                 <div className="text-right">
                                                                     <div className="text-white font-bold">
-                                                                        {zone.totalIngresos.toFixed(2)}€
+                                                                        {(zone.totalIngresos ?? 0).toFixed(2)}€
                                                                     </div>
                                                                     <div className="text-zinc-400 text-xs">
-                                                                        {zone.promedioPorCarrera.toFixed(2)}€/carrera
+                                                                        {(zone.promedioPorCarrera ?? 0).toFixed(2)}€/carrera
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -720,7 +722,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                                 ></div>
                                                             </div>
                                                             <div className="text-zinc-500 text-xs mt-1">
-                                                                {zone.porcentajeDelTotal.toFixed(1)}% del total de ingresos
+                                                                {(zone.porcentajeDelTotal ?? 0).toFixed(1)}% del total de ingresos
                                                             </div>
                                                         </div>
                                                     ))}
@@ -734,7 +736,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                     <div>
                                                         <div className="text-zinc-400">Total Ingresos</div>
                                                         <div className="text-white font-bold">
-                                                            {zoneTimeAnalysis.totalIngresos.toFixed(2)}€
+                                                            {(zoneTimeAnalysis.totalIngresos ?? 0).toFixed(2)}€
                                                         </div>
                                                     </div>
                                                     <div>
@@ -747,7 +749,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                         <div className="text-zinc-400">Promedio por Carrera</div>
                                                         <div className="text-white font-bold">
                                                             {zoneTimeAnalysis.totalCarreras > 0
-                                                                ? (zoneTimeAnalysis.totalIngresos / zoneTimeAnalysis.totalCarreras).toFixed(2)
+                                                                ? (zoneTimeAnalysis.totalIngresos / zoneTimeAnalysis.totalCarreras ?? 0).toFixed(2)
                                                                 : '0.00'}€
                                                         </div>
                                                     </div>

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ScreenTopBar from '../components/ScreenTopBar';
 import { Seccion } from '../types';
 import { getCarrerasByMonth, getGastosByMonth } from '../services/api';
@@ -110,8 +110,8 @@ const ResumenMensualIngresosScreen: React.FC<ResumenMensualIngresosScreenProps> 
         setSelectedYear(newYear);
     };
 
-    const formatCurrency = (value: number): string => {
-        if (value === 0) return '';
+    const formatCurrency = (value: number | undefined | null): string => {
+        if (!value || value === 0) return '';
         return value.toFixed(2).replace('.', ',');
     };
 

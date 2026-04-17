@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Seccion, Turno, CarreraVista } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -334,7 +334,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateTo, onQuickAction }) =>
     { label: 'Ajustes', icon: <SettingsIcon />, action: () => navigateTo(Seccion.AjustesGenerales) },
   ];
 
-  const formatCurrency = (value: number): string => `${value.toFixed(2).replace('.', ',')} €`;
+  const formatCurrency = (value: number | undefined | null): string => `${(value ?? 0).toFixed(2).replace('.', ',')} €`;
 
   const today = new Date();
   const formattedDate = today.toLocaleDateString('es-ES', {
@@ -570,13 +570,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateTo, onQuickAction }) =>
                 <div className="mb-3">
                   <div className="flex justify-between items-center mb-1">
                     <span className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                      {formatCurrency(ingresosHoy)} / {formatCurrency(objetivoDiario)}
+                      {formatCurrency(ingresosHoy ?? 0)} / {formatCurrency(objetivoDiario ?? 0)}
                     </span>
-                    <span
-                      className="text-sm font-bold"
-                      style={{ color: statusColor }}
-                    >
-                      {porcentajeProgreso.toFixed(0)}%
+                    <span className={`text-sm font-bold ${porcentajeProgreso >= 100 ? 'text-green-400' : 'text-cyan-400'}`}>
+                      {(porcentajeProgreso ?? 0).toFixed(0)}%
                     </span>
                   </div>
                   <div
@@ -613,7 +610,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateTo, onQuickAction }) =>
                       <span className={`text-xs font-semibold ${porcentajeVsPromedio >= 0 ? (isDark ? 'text-green-400' : 'text-green-600') : (isDark ? 'text-red-400' : 'text-red-600')}`}>
                         {formatCurrency(promedioDiasAnteriores)}
                         {porcentajeVsPromedio !== 0 && (
-                          <span> ({porcentajeVsPromedio >= 0 ? '+' : ''}{porcentajeVsPromedio.toFixed(1)}%)</span>
+                          <span> ({porcentajeVsPromedio >= 0 ? '+' : ''}{(porcentajeVsPromedio ?? 0).toFixed(1)}%)</span>
                         )}
                       </span>
                     </div>

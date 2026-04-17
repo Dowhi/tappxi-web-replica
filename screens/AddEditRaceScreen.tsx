@@ -176,8 +176,8 @@ const AddEditRaceScreen: React.FC<AddEditRaceScreenProps> = ({ navigateTo, raceI
             setIsLoading(true);
             const race = await getCarrera(id);
             if (race) {
-                setTaximetro(race.taximetro.toFixed(2));
-                setCobrado(race.cobrado.toFixed(2));
+                setTaximetro((race.taximetro ?? 0).toFixed(2));
+                setCobrado((race.cobrado ?? 0).toFixed(2));
                 setFormaPago(race.formaPago);
                 setTipoCarrera(race.tipoCarrera || 'Urbana');
                 setEsEmisora(race.formaPago === 'Vales' ? true : race.emisora);

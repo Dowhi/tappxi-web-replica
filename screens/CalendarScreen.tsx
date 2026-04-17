@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Seccion } from '../types';
 import { getCarrerasByDate, getGastosByDate, getExcepciones, Excepcion } from '../services/api';
 import ScreenTopBar from '../components/ScreenTopBar';
@@ -480,7 +480,7 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigateTo }) => {
                                                 width: '100%'
                                             }}
                                         >
-                                            {(dayInfo.ingresos).toFixed(2).replace('.', ',')}
+                                            {(dayInfo?.ingresos ?? 0).toFixed(2).replace('.', ',')}
                                         </div>
                                     )}
                                     {(dayInfo?.gastos ?? 0) > 0 && (
@@ -491,7 +491,7 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigateTo }) => {
                                                 width: '100%'
                                             }}
                                         >
-                                            {(dayInfo.gastos).toFixed(2).replace('.', ',')}
+                                            {(dayInfo?.gastos ?? 0).toFixed(2).replace('.', ',')}
                                         </div>
                                     )}
                                 </div>

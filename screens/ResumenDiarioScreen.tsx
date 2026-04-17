@@ -44,7 +44,8 @@ const ResumenDiarioScreen: React.FC<ResumenDiarioScreenProps> = ({ navigateTo })
                 ]);
                 setTurnos(turnosData);
                 setCarreras(carrerasData);
-                setGastosTotal(gastosData);
+                const totalGastosReport = (gastosData as any[]).reduce((sum, g) => sum + (g.importe || 0), 0);
+                setGastosTotal(totalGastosReport);
             } catch (error) {
                 console.error("Error loading daily summary:", error);
             } finally {
@@ -260,16 +261,16 @@ const ResumenDiarioScreen: React.FC<ResumenDiarioScreenProps> = ({ navigateTo })
                                 )}
                                 <div className="flex justify-between">
                                     <span>Suma Tarjetas:</span>
-                                    <span className="font-semibold">{turno.sumaTarjetas.toFixed(2)}</span>
+                                    <span className="font-semibold">{(turno.sumaTarjetas ?? 0).toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Suma Emisora:</span>
-                                    <span className="font-semibold">{turno.sumaEmisora.toFixed(2)}</span>
+                                    <span className="font-semibold">{(turno.sumaEmisora ?? 0).toFixed(2)}</span>
                                 </div>
                                 {turno.cVales > 0 && (
                                     <div className="flex justify-between">
                                         <span>Suma Vales:</span>
-                                        <span className="font-semibold">{turno.sumaVales.toFixed(2)}</span>
+                                        <span className="font-semibold">{(turno.sumaVales ?? 0).toFixed(2)}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between">
@@ -301,21 +302,25 @@ const ResumenDiarioScreen: React.FC<ResumenDiarioScreenProps> = ({ navigateTo })
                             <div className="mt-2 bg-white rounded border border-blue-900 p-2">
                                 <div className="flex justify-between items-center">
                                     <span className="text-blue-900 font-bold">TOTAL</span>
-                                    <span className="text-blue-900 font-bold">{turno.total.toFixed(2)}</span>
+                                    <span className="text-blue-900 font-bold">{(turno.total ?? 0).toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
                     ))}
 
                     {turnosConEstadisticas.length > 0 && (
-                        <div className="bg-blue-900 rounded-lg p-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-white font-bold">TOTAL DÍA</span>
-                                <div className="flex gap-4">
-                                    <span className="text-white font-semibold">{totalDia.ingresos.toFixed(2)}</span>
-                                    <span className="text-red-300 font-semibold">{totalDia.gastos.toFixed(2)}</span>
-                                    <span className="text-white font-semibold">{totalDia.balance.toFixed(2)}</span>
-                                </div>
+                        <div className="bg-zinc-800 rounded-2xl p-4 flex justify-around text-center border border-zinc-700">
+                            <div>
+                                <p className="text-xs text-zinc-400 uppercase">Ingresos</p>
+                                <span className="text-white font-semibold">{(totalDia.ingresos ?? 0).toFixed(2)}</span>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-400 uppercase">Gastos</p>
+                                <span className="text-red-300 font-semibold">{(totalDia.gastos ?? 0).toFixed(2)}</span>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-400 uppercase">Balance</p>
+                                <span className="text-white font-semibold">{(totalDia.balance ?? 0).toFixed(2)}</span>
                             </div>
                         </div>
                     )}

@@ -177,8 +177,8 @@ const ResumenMensualDetalladoScreen: React.FC<ResumenMensualDetalladoScreenProps
         setSelectedYear(newYear);
     };
 
-    const formatCurrency = (value: number): string => {
-        return value.toFixed(2).replace('.', ',');
+    const formatCurrency = (value: number | undefined | null): string => {
+        return (value ?? 0).toFixed(2).replace('.', ',');
     };
 
     const formatNumber = (value: number): string => {
