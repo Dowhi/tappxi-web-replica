@@ -31,8 +31,6 @@ dev-dist
 
 # Generated files
 tsc_output.txt
-
 # Scratch files
 debug-screenshot.png
 fetch_search.txt
-
