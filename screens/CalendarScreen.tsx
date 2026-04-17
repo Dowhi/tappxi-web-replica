@@ -480,7 +480,7 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigateTo }) => {
                                                 width: '100%'
                                             }}
                                         >
-                                            {(dayInfo?.ingresos ?? 0).toFixed(2).replace('.', ',')}
+                                            {Number(dayInfo?.ingresos ?? 0).toFixed(2).replace('.', ',')}
                                         </div>
                                     )}
                                     {(dayInfo?.gastos ?? 0) > 0 && (
@@ -491,7 +491,7 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigateTo }) => {
                                                 width: '100%'
                                             }}
                                         >
-                                            {(dayInfo?.gastos ?? 0).toFixed(2).replace('.', ',')}
+                                            {Number(dayInfo?.gastos ?? 0).toFixed(2).replace('.', ',')}
                                         </div>
                                     )}
                                 </div>

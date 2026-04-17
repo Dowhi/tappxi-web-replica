@@ -202,12 +202,12 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
         
         if (mejoresHorarios.length > 0) {
             const mejorHora = mejoresHorarios[0];
-            sugerencias.push(`Mejor hora: ${mejorHora.hora}:00 - ${mejorHora.hora + 1}:00 (${(mejorHora.ingresos ?? 0).toFixed(2)}€ promedio)`);
+            sugerencias.push(`Mejor hora: ${mejorHora.hora}:00 - ${mejorHora.hora + 1}:00 (${Number(mejorHora.ingresos ?? 0).toFixed(2)}€ promedio)`);
         }
 
         if (diasMasRentables.length > 0) {
             const mejorDia = diasMasRentables[0];
-            sugerencias.push(`Mejor día: ${mejorDia.nombre} (${(mejorDia.ingresos ?? 0).toFixed(2)}€ promedio)`);
+            sugerencias.push(`Mejor día: ${mejorDia.nombre} (${Number(mejorDia.ingresos ?? 0).toFixed(2)}€ promedio)`);
         }
 
         // Analizar franjas horarias
@@ -224,7 +224,7 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
         ].sort((a, b) => b.total - a.total)[0];
 
         if (mejorFranja.total > 0) {
-            sugerencias.push(`Mejor franja: ${mejorFranja.nombre} (${(mejorFranja.total ?? 0).toFixed(2)}€ total)`);
+            sugerencias.push(`Mejor franja: ${mejorFranja.nombre} (${Number(mejorFranja.total ?? 0).toFixed(2)}€ total)`);
         }
 
         return sugerencias;
@@ -331,7 +331,7 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
                     {/* Eje Y */}
                     {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
                         const y = height - 40 - (ratio * maxBarHeight);
-                        const value = (maxIngresos * ratio ?? 0).toFixed(0);
+                        const value = Number(maxIngresos * ratio ?? 0).toFixed(0);
                         return (
                             <g key={ratio}>
                                 <line
@@ -496,7 +496,7 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
                                                         {horario.hora}:00 - {horario.hora + 1}:00
                                                     </div>
                                                     <div className="text-xs text-zinc-400">
-                                                        {(horario.ingresos ?? 0).toFixed(2)}€ promedio
+                                                        {Number(horario.ingresos ?? 0).toFixed(2)}€ promedio
                                                     </div>
                                                 </div>
                                             </div>
@@ -520,7 +520,7 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
                                                 <div>
                                                     <div className="text-white font-semibold">{dia.nombre}</div>
                                                     <div className="text-xs text-zinc-400">
-                                                        {(dia.ingresos ?? 0).toFixed(2)}€ promedio
+                                                        {Number(dia.ingresos ?? 0).toFixed(2)}€ promedio
                                                     </div>
                                                 </div>
                                             </div>
@@ -556,8 +556,8 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
                             <div className="grid grid-cols-2 gap-3 mb-4">
                                 <div className="bg-zinc-800 rounded-lg p-3">
                                     <div className="text-zinc-400 text-xs mb-1">Mes Actual</div>
-                                    <div className="text-white text-lg font-bold">{(mesActual.ingresos ?? 0).toFixed(2)}€</div>
-                                    <div className="text-zinc-500 text-xs mt-1">Gastos: {(mesActual.gastos ?? 0).toFixed(2)}€</div>
+                                    <div className="text-white text-lg font-bold">{Number(mesActual.ingresos ?? 0).toFixed(2)}€</div>
+                                    <div className="text-zinc-500 text-xs mt-1">Gastos: {Number(mesActual.gastos ?? 0).toFixed(2)}€</div>
                                 </div>
                                 <div className="bg-zinc-800 rounded-lg p-3">
                                     <div className="text-zinc-400 text-xs mb-1">Mes Anterior</div>
@@ -568,15 +568,15 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
                             <div className="bg-zinc-800 rounded-lg p-3">
                                 <div className="text-zinc-400 text-xs mb-2">Diferencia</div>
                                 <div className={`text-lg font-bold ${comparativaMes.diferenciaIngresos >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                    {comparativaMes.diferenciaIngresos >= 0 ? '+' : ''}{(comparativaMes.diferenciaIngresos ?? 0).toFixed(2)}€
+                                    {comparativaMes.diferenciaIngresos >= 0 ? '+' : ''}{Number(comparativaMes.diferenciaIngresos ?? 0).toFixed(2)}€
                                     {comparativaMes.porcentajeIngresos !== 0 && (
                                         <span className="text-sm ml-2">
-                                            ({comparativaMes.porcentajeIngresos >= 0 ? '+' : ''}{(comparativaMes.porcentajeIngresos ?? 0).toFixed(1)}%)
+                                            ({comparativaMes.porcentajeIngresos >= 0 ? '+' : ''}{Number(comparativaMes.porcentajeIngresos ?? 0).toFixed(1)}%)
                                         </span>
                                     )}
                                 </div>
                                 <div className="text-zinc-500 text-xs mt-2">
-                                    Balance: {comparativaMes.diferenciaBalance >= 0 ? '+' : ''}{(comparativaMes.diferenciaBalance ?? 0).toFixed(2)}€
+                                    Balance: {comparativaMes.diferenciaBalance >= 0 ? '+' : ''}{Number(comparativaMes.diferenciaBalance ?? 0).toFixed(2)}€
                                 </div>
                             </div>
                         </div>
@@ -590,8 +590,8 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
                             <div className="grid grid-cols-2 gap-3 mb-4">
                                 <div className="bg-zinc-800 rounded-lg p-3">
                                     <div className="text-zinc-400 text-xs mb-1">Año Actual</div>
-                                    <div className="text-white text-lg font-bold">{(añoActual.ingresos ?? 0).toFixed(2)}€</div>
-                                    <div className="text-zinc-500 text-xs mt-1">Gastos: {(añoActual.gastos ?? 0).toFixed(2)}€</div>
+                                    <div className="text-white text-lg font-bold">{Number(añoActual.ingresos ?? 0).toFixed(2)}€</div>
+                                    <div className="text-zinc-500 text-xs mt-1">Gastos: {Number(añoActual.gastos ?? 0).toFixed(2)}€</div>
                                 </div>
                                 <div className="bg-zinc-800 rounded-lg p-3">
                                     <div className="text-zinc-400 text-xs mb-1">Año Anterior</div>
@@ -602,15 +602,15 @@ const AnalisisAvanzadoScreen: React.FC<AnalisisAvanzadoScreenProps> = ({ navigat
                             <div className="bg-zinc-800 rounded-lg p-3">
                                 <div className="text-zinc-400 text-xs mb-2">Diferencia</div>
                                 <div className={`text-lg font-bold ${comparativaAño.diferenciaIngresos >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                    {comparativaAño.diferenciaIngresos >= 0 ? '+' : ''}{(comparativaAño.diferenciaIngresos ?? 0).toFixed(2)}€
+                                    {comparativaAño.diferenciaIngresos >= 0 ? '+' : ''}{Number(comparativaAño.diferenciaIngresos ?? 0).toFixed(2)}€
                                     {comparativaAño.porcentajeIngresos !== 0 && (
                                         <span className="text-sm ml-2">
-                                            ({comparativaAño.porcentajeIngresos >= 0 ? '+' : ''}{(comparativaAño.porcentajeIngresos ?? 0).toFixed(1)}%)
+                                            ({comparativaAño.porcentajeIngresos >= 0 ? '+' : ''}{Number(comparativaAño.porcentajeIngresos ?? 0).toFixed(1)}%)
                                         </span>
                                     )}
                                 </div>
                                 <div className="text-zinc-500 text-xs mt-2">
-                                    Balance: {comparativaAño.diferenciaBalance >= 0 ? '+' : ''}{(comparativaAño.diferenciaBalance ?? 0).toFixed(2)}€
+                                    Balance: {comparativaAño.diferenciaBalance >= 0 ? '+' : ''}{Number(comparativaAño.diferenciaBalance ?? 0).toFixed(2)}€
                                 </div>
                             </div>
                         </div>

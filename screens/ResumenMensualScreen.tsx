@@ -293,11 +293,11 @@ const ResumenMensualScreen: React.FC<ResumenMensualScreenProps> = ({ navigateTo 
                     <div className="flex items-center">
                         <span className="text-zinc-100 font-bold uppercase tracking-wide">Total</span>
                     </div>
-                    <div className="text-cyan-300 text-right font-bold flex items-center justify-end whitespace-nowrap">{(totales.ingresosTotal ?? 0).toFixed(2)} €</div>
-                    <div className="text-red-400 text-right font-bold flex items-center justify-end whitespace-nowrap">{(totales.gastosTotal ?? 0).toFixed(2)} €</div>
+                    <div className="text-cyan-300 text-right font-bold flex items-center justify-end whitespace-nowrap">{Number(totales.ingresosTotal ?? 0).toFixed(2)} €</div>
+                    <div className="text-red-400 text-right font-bold flex items-center justify-end whitespace-nowrap">{Number(totales.gastosTotal ?? 0).toFixed(2)} €</div>
                     <div className={`text-right font-bold flex items-center justify-end whitespace-nowrap ${totales.totalGeneral >= 0 ? 'text-emerald-400' : 'text-red-400'
                         }`}>
-                        {(totales.totalGeneral ?? 0).toFixed(2)} €
+                        {Number(totales.totalGeneral ?? 0).toFixed(2)} €
                     </div>
                 </div>
             </div>

@@ -217,7 +217,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                     {/* Eje Y - líneas de referencia */}
                     {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
                         const y = height - 20 - (ratio * maxBarHeight);
-                        const value = (maxValue * ratio ?? 0).toFixed(0);
+                        const value = Number(maxValue * ratio ?? 0).toFixed(0);
                         return (
                             <g key={ratio}>
                                 <line
@@ -371,8 +371,8 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                 {/* Etiquetas */}
                 <div className="flex justify-between mt-2 text-xs text-zinc-500 px-2">
                     <span>0€</span>
-                    <span className="text-green-400">{+(maxBalance ?? 0).toFixed(0)}€</span>
-                    <span className="text-red-400">{(minBalance ?? 0).toFixed(0)}€</span>
+                    <span className="text-green-400">{Number(maxBalance ?? 0).toFixed(0)}€</span>
+                    <span className="text-red-400">{Number(minBalance ?? 0).toFixed(0)}€</span>
                 </div>
             </div>
         );
@@ -749,7 +749,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                                                         <div className="text-zinc-400">Promedio por Carrera</div>
                                                         <div className="text-white font-bold">
                                                             {zoneTimeAnalysis.totalCarreras > 0
-                                                                ? (zoneTimeAnalysis.totalIngresos / zoneTimeAnalysis.totalCarreras ?? 0).toFixed(2)
+                                                                ? Number(zoneTimeAnalysis.totalIngresos / zoneTimeAnalysis.totalCarreras ?? 0).toFixed(2)
                                                                 : '0.00'}€
                                                         </div>
                                                     </div>

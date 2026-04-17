@@ -334,7 +334,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateTo, onQuickAction }) =>
     { label: 'Ajustes', icon: <SettingsIcon />, action: () => navigateTo(Seccion.AjustesGenerales) },
   ];
 
-  const formatCurrency = (value: number | undefined | null): string => `${(value ?? 0).toFixed(2).replace('.', ',')} €`;
+  const formatCurrency = (value: number | undefined | null): string => `${Number(value ?? 0).toFixed(2).replace('.', ',')} €`;
 
   const today = new Date();
   const formattedDate = today.toLocaleDateString('es-ES', {
