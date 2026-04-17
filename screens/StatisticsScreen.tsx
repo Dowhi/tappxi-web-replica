@@ -371,7 +371,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = ({ navigateTo }) => {
                 {/* Etiquetas */}
                 <div className="flex justify-between mt-2 text-xs text-zinc-500 px-2">
                     <span>0€</span>
-                    <span className="text-green-400">+(maxBalance ?? 0).toFixed(0)}€</span>
+                    <span className="text-green-400">{+(maxBalance ?? 0).toFixed(0)}€</span>
                     <span className="text-red-400">{(minBalance ?? 0).toFixed(0)}€</span>
                 </div>
             </div>
